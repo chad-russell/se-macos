@@ -11,8 +11,6 @@ import Cocoa
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate {
 
-
-
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         // Insert code here to initialize your application
     }
@@ -20,7 +18,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationWillTerminate(_ aNotification: Notification) {
         // Insert code here to tear down your application
     }
-
-
+    
+    @IBAction func seSave(sender: NSMenuItem) {
+        // override this in the view controller
+    }
+    
+    @IBAction func seOpen(sender: NSMenuItem) {
+        // override this in the view controller
+    }
 }
 
