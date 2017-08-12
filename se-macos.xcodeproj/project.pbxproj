@@ -7,9 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		071810C61F3B8FE9000FF379 /* SESliderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 071810C51F3B8FE9000FF379 /* SESliderView.swift */; };
 		0724AC3C1EAA7C5200E7CFBB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0724AC3B1EAA7C5200E7CFBB /* AppDelegate.swift */; };
 		0724AC401EAA7C5200E7CFBB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0724AC3F1EAA7C5200E7CFBB /* Assets.xcassets */; };
 		0724AC431EAA7C5200E7CFBB /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0724AC411EAA7C5200E7CFBB /* Main.storyboard */; };
+		074EB2301F3F70D900F055E3 /* SETextLineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 074EB22F1F3F70D900F055E3 /* SETextLineView.swift */; };
 		07813CF01F2583E300152E47 /* SETextTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07813CEF1F2583E300152E47 /* SETextTableViewController.swift */; };
 		079D6FC41F186DCE00310B39 /* libse.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 079D6FC21F186BE100310B39 /* libse.a */; };
 		07B8FA291F27C14E00857145 /* SETableCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07B8FA281F27C14E00857145 /* SETableCellView.swift */; };
@@ -17,12 +19,14 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		071810C51F3B8FE9000FF379 /* SESliderView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SESliderView.swift; sourceTree = "<group>"; };
 		0724AC381EAA7C5200E7CFBB /* se-macos.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "se-macos.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		0724AC3B1EAA7C5200E7CFBB /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		0724AC3F1EAA7C5200E7CFBB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		0724AC421EAA7C5200E7CFBB /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		0724AC441EAA7C5200E7CFBB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0724AC4A1EAA7DF500E7CFBB /* se-macos-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "se-macos-Bridging-Header.h"; sourceTree = "<group>"; };
+		074EB22F1F3F70D900F055E3 /* SETextLineView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SETextLineView.swift; sourceTree = "<group>"; };
 		07813CEF1F2583E300152E47 /* SETextTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SETextTableViewController.swift; sourceTree = "<group>"; };
 		079D6FC21F186BE100310B39 /* libse.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libse.a; path = ../Clion/se/build/libse.a; sourceTree = "<group>"; };
 		079DE6F91EAAA60A00345299 /* libczmq.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libczmq.a; path = ../../../../usr/local/Cellar/czmq/4.0.2/lib/libczmq.a; sourceTree = "<group>"; };
@@ -63,8 +67,10 @@
 			isa = PBXGroup;
 			children = (
 				0724AC3B1EAA7C5200E7CFBB /* AppDelegate.swift */,
+				071810C51F3B8FE9000FF379 /* SESliderView.swift */,
 				07813CEF1F2583E300152E47 /* SETextTableViewController.swift */,
 				07B8FA281F27C14E00857145 /* SETableCellView.swift */,
+				074EB22F1F3F70D900F055E3 /* SETextLineView.swift */,
 				07B8FA2C1F280C5200857145 /* SETableView.swift */,
 				0724AC3F1EAA7C5200E7CFBB /* Assets.xcassets */,
 				0724AC411EAA7C5200E7CFBB /* Main.storyboard */,
@@ -155,6 +161,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				071810C61F3B8FE9000FF379 /* SESliderView.swift in Sources */,
+				074EB2301F3F70D900F055E3 /* SETextLineView.swift in Sources */,
 				07B8FA291F27C14E00857145 /* SETableCellView.swift in Sources */,
 				0724AC3C1EAA7C5200E7CFBB /* AppDelegate.swift in Sources */,
 				07B8FA2D1F280C5200857145 /* SETableView.swift in Sources */,

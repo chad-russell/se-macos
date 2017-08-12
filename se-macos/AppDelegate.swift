@@ -26,5 +26,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @IBAction func seOpen(sender: NSMenuItem) {
         // override this in the view controller
     }
+    
+    @IBAction func seChooseFont(sender: NSMenuItem) {
+        // override this in the view controller
+    }
+    
+    @IBAction func seIncreaseFontSize(sender: NSMenuItem) {
+        // override this in the view controller
+    }
+    
+    @IBAction func seDecreaseFontSIze(sender: NSMenuItem) {
+        // override this in the view controller
+    }
 }
 

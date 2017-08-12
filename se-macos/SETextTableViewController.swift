@@ -9,33 +9,42 @@
 
 import Cocoa
 
-class SETextTableViewController : NSViewController, NSTableViewDataSource, NSTableViewDelegate {
+class SETextTableViewController : NSViewController, NSTableViewDataSource, NSTableViewDelegate, SESliderViewDelegate {
     
     @IBOutlet weak var tableView: SETableView!
-    @IBOutlet weak var undoSlider: NSSlider!
-    @IBOutlet weak var globalUndoSlider: NSSlider!
+    @IBOutlet weak var undoSlider: SESliderView!
+    @IBOutlet weak var globalUndoSlider: SESliderView!
     
     var buf: editor_buffer_t?
-    var screen: editor_screen_t?
     
-    var oldUndoSliderValue: Double = 0
-    var oldGlobalUndoSliderValue: Double = 0
+    let virtualNewlines = false
+    let virtualNewlineLength = Int64(12)
     
-    let virtualNewlines = true
-    let virtualNewlineLength = Int64(10)
+    var seFont: NSFont = NSFont(name: "Inconsolata", size: 16)!
+    var savedCursorRow = 0
+    var cursorView: NSView?
+    var widestColumn: CGFloat = -1
+    var pasteboard: NSPasteboard = NSPasteboard.general()
     
     func reload() {
+//        let currentRow = Int(editor_buffer_get_cursor_row_virtual(buf!, virtualNewlineLength))
+//        let currentCol = Int(editor_buffer_get_cursor_col_virtual(buf!, virtualNewlineLength))
+//        Swift.print("current row: \(currentRow), col: \(currentCol)")
+        
         self.tableView.reloadData()
         
-        let undoSize = editor_buffer_get_undo_size(buf!)
-        self.undoSlider.maxValue = Double(undoSize - 1)
-        self.undoSlider.numberOfTickMarks = Int(undoSize - 1)
-        self.undoSlider.intValue = Int32(editor_buffer_get_undo_index(buf!))
+        self.undoSlider.max = Int(editor_buffer_get_undo_size(buf!))
+        self.undoSlider.value = Int(editor_buffer_get_undo_index(buf!))
         
-        let globalUndoSize = editor_buffer_get_global_undo_size(buf!)
-        self.globalUndoSlider.maxValue = Double(globalUndoSize - 1)
-        self.globalUndoSlider.numberOfTickMarks = Int(globalUndoSize - 1)
-        self.globalUndoSlider.intValue = Int32(editor_buffer_get_global_undo_index(buf!))
+        self.globalUndoSlider.max = Int(editor_buffer_get_global_undo_size(buf!))
+        self.globalUndoSlider.value = Int(editor_buffer_get_global_undo_index(buf!))
+        
+        let column = tableView.tableColumns[0]
+        if column.width != widestColumn {
+            column.width = widestColumn + 100
+        }
+        
+        ensureCursorVisible()
     }
     
     func seSave(sender: NSMenuItem) {
@@ -51,17 +60,48 @@ class SETextTableViewController : NSViewController, NSTableViewDataSource, NSTab
         dialog.canChooseDirectories = false
         dialog.canCreateDirectories = false
         dialog.allowsMultipleSelection = false
-        dialog.allowedFileTypes = ["txt", "json", "java", "xml", "html"]
-        
+
         if dialog.runModal() == NSModalResponseOK {
             let result = dialog.url // Pathname of the file
             
             if result != nil {
                 let path = result!.path
                 
-                screen = editor_buffer_open_file(buf!, path)
+                editor_buffer_open_file(buf!, path)
+                
+                widestColumn = -1
+                
                 reload()
             }
+        }
+    }
+    
+    func seChooseFont(sender: NSMenuItem) {
+        let fontManager = NSFontManager.shared()
+        let panel = fontManager.fontPanel(true)
+        panel?.makeKeyAndOrderFront(sender)
+    }
+    
+    func seIncreaseFontSize(sender: NSMenuItem) {
+        self.seFont = NSFont(name: self.seFont.fontName, size: self.seFont.pointSize + 1)!
+        recalculateTableRowHeight()
+        self.reload()
+    }
+    
+    func seDecreaseFontSIze(sender: NSMenuItem) {
+        self.seFont = NSFont(name: self.seFont.fontName, size: self.seFont.pointSize - 1)!
+        recalculateTableRowHeight()
+        self.reload()
+    }
+    
+    override func changeFont(_ sender: Any?) {
+        if let fontManager = sender as? NSFontManager {
+            self.seFont = fontManager.convert(self.seFont)
+            self.reload()
+            
+            recalculateTableRowHeight()
+        } else {
+            Swift.print("error: could not cast sender to an NSFontManager")
         }
     }
     
@@ -69,19 +109,19 @@ class SETextTableViewController : NSViewController, NSTableViewDataSource, NSTab
         super.viewDidLoad()
         
         tableView.controller = self
+        tableView.tableColumns[0].width = 2000
         
         buf = editor_buffer_create()
-        screen = editor_buffer_get_current_screen(buf!)
         
-        undoSlider.doubleValue = 0;
-        globalUndoSlider.doubleValue = 0;
+        undoSlider.max = 0;
+        undoSlider.value = 0;
+        undoSlider.delegate = self;
         
-//        let selectionFrame: NSRect = NSMakeRect(32, 32, 200, 200)
-//        let selectionView = NSView(frame: selectionFrame)
-//        selectionView.wantsLayer = true
-//        selectionView.layer?.backgroundColor = NSColor.green.cgColor
-//        selectionView.layer?.opacity = 0.5
-//        self.tableView.addSubview(selectionView)
+        globalUndoSlider.max = 0;
+        globalUndoSlider.value = 0;
+        globalUndoSlider.delegate = self;
+        
+        pasteboard.declareTypes([NSPasteboardTypeString], owner: nil)
         
         reload()
     }
@@ -93,15 +133,19 @@ class SETextTableViewController : NSViewController, NSTableViewDataSource, NSTab
         
         let lineCount: Int64
         if virtualNewlines {
-            lineCount = editor_buffer_get_virtual_line_count(buf!, virtualNewlineLength)
+            lineCount = editor_buffer_get_line_count_virtual(buf!, virtualNewlineLength)
         } else {
-            lineCount = editor_screen_get_line_count(screen!)
+            lineCount = editor_buffer_get_line_count(buf!)
         }
         
-        return Int(lineCount)
+        let linesPerView = 4
+        
+        return (Int(lineCount) + linesPerView - 1) / linesPerView
     }
     
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
+//        Swift.print("row: \(row)")
+        
         if buf == nil {
             return nil
         }
@@ -109,90 +153,276 @@ class SETextTableViewController : NSViewController, NSTableViewDataSource, NSTab
         let cell = self.tableView.make(withIdentifier: "Cell", owner: self) as! SETableCellView
         cell.controller = self
         cell.row = row
+        
+//        if cell.textField?.font != nil {
+//            cell.textField!.font = self.seFont
+//            cell.lineNumberView.font = self.seFont
+//        }
+        
         cell.reload()
+        
+        let width = cell.textField!.frame.width
+        if width > widestColumn {
+            widestColumn = width
+            
+            reload()
+        }
         
         return cell
     }
     
+    func recalculateTableRowHeight() {
+        let view = self.tableView.view(atColumn: 0, row: 0, makeIfNecessary: true) as? SETableCellView
+        view?.layoutSubtreeIfNeeded()
+        
+//        self.tableView.rowHeight = view!.textField!.frame.height * 4
+        self.tableView.rowHeight = view!.row0.frame.height * 4
+        
+        self.tableView.reloadData()
+    }
+    
     override var acceptsFirstResponder: Bool { return true }
+    
+    func reloadTableRows(rows: [Int]) {
+//        let max = tableView.numberOfRows
+        
+//        for row in rows {
+//            if row < 0 { continue; }
+//            if row > max - 1 { continue; }
+//            
+//            if let cell = tableView.view(atColumn: 0, row: row, makeIfNecessary: false) as? SETableCellView {
+//                cell.reload()
+//            }
+//        }
+        
+//        tableView.reloadData(forRowIndexes: IndexSrows[0]..<max), columnIndexes: [0])
+        
+        reload()
+    }
     
     override func keyDown(with event: NSEvent) {
         if let chars = event.characters {
+            let currentRow: Int
+            if virtualNewlines {
+                currentRow = Int(editor_buffer_get_cursor_row_virtual(buf!, virtualNewlineLength))
+            } else {
+                currentRow = Int(editor_buffer_get_cursor_row(buf!))
+            }
+            
             if event.keyCode == 51 {
                 // backspace
-                screen = editor_buffer_delete(buf!)
-                reload()
+                let isSelection = editor_buffer_cursor_is_selection(buf!) == 1
+                
+                editor_buffer_delete(buf!)
+                
+                if isSelection {
+                    reload()
+                } else {
+                    reloadTableRows(rows: [currentRow - 1, currentRow, currentRow + 1])
+                }
             } else if event.keyCode == 123 {
                 // left
-                screen = editor_buffer_set_cursor_pos_relative(buf!, -1)
-                reload()
+                editor_buffer_set_cursor_is_selection(buf!, event.modifierFlags.contains(.shift) ?  1 : 0)
+                
+                if event.modifierFlags.contains(.command) {
+                    if virtualNewlines {
+                        let currentRow = editor_buffer_get_cursor_row_virtual(buf!, virtualNewlineLength)
+                        editor_buffer_set_cursor_point_virtual(buf!, currentRow, 0, virtualNewlineLength)
+                    } else {
+                        let currentRow = editor_buffer_get_cursor_row(buf!)
+                        editor_buffer_set_cursor_point(buf!, currentRow, 0)
+                    }
+                    
+                    // todo(chad): handle cmd-shift-left to select to beginning of row
+                } else {
+                    editor_buffer_set_cursor_pos_relative(buf!, -1)
+                }
+                
+                reloadTableRows(rows: [currentRow - 1, currentRow, currentRow + 1])
             } else if event.keyCode == 124 {
                 // right
-                screen = editor_buffer_set_cursor_pos_relative(buf!, 1)
-                reload()
+                editor_buffer_set_cursor_is_selection(buf!, event.modifierFlags.contains(.shift) ? 1 : 0)
+                
+                if event.modifierFlags.contains(.command) {
+                    if virtualNewlines {
+                        let currentRow = editor_buffer_get_cursor_row_virtual(buf!, virtualNewlineLength)
+                        let currentRowLength = editor_buffer_get_line_length_virtual(buf!, currentRow, virtualNewlineLength)
+                        
+                        editor_buffer_set_cursor_point_virtual(buf!, currentRow, currentRowLength, virtualNewlineLength)
+                    } else {
+                        let currentRow = editor_buffer_get_cursor_row(buf!)
+                        let currentRowLength = editor_buffer_get_line_length(buf!, currentRow)
+                        
+                        editor_buffer_set_cursor_point(buf!, currentRow, currentRowLength)
+                    }
+                    
+                    // todo(chad): handle cmd-shift-left to select to beginning of row
+                } else {
+                    editor_buffer_set_cursor_pos_relative(buf!, 1)
+                }
+                
+                reloadTableRows(rows: [currentRow - 1, currentRow, currentRow + 1])
             } else if event.keyCode == 125 {
                 // down
+                editor_buffer_set_cursor_is_selection(buf!, event.modifierFlags.contains(.shift) ? 1 : 0)
                 
-                let cursorRow: Int64
-                let cursorCol: Int64
-                if virtualNewlines {
-                    cursorRow = editor_screen_get_cursor_row_virtual(screen!, virtualNewlineLength)
-                    cursorCol = editor_screen_get_cursor_col_virtual(screen!, virtualNewlineLength)
-                    
-                    screen = editor_buffer_set_cursor_point_virtual(buf!, cursorRow + 1, cursorCol, virtualNewlineLength)
+                if event.modifierFlags.contains(.command) {
+                    if virtualNewlines {
+                        let cursorRow = editor_buffer_get_line_count_virtual(buf!, virtualNewlineLength)
+                        let cursorCol = editor_buffer_get_cursor_col_virtual(buf!, virtualNewlineLength)
+                        
+                        editor_buffer_set_cursor_point_virtual(buf!, cursorRow, cursorCol, virtualNewlineLength)
+                    } else {
+                        let cursorRow = editor_buffer_get_line_count(buf!)
+                        let cursorCol = editor_buffer_get_cursor_col(buf!)
+                        
+                        editor_buffer_set_cursor_point(buf!, cursorRow, cursorCol)
+                    }
                 } else {
-                    cursorRow = editor_screen_get_cursor_row(screen!)
-                    cursorCol = editor_screen_get_cursor_col(screen!)
-                    screen = editor_buffer_set_cursor_point(buf!, cursorRow + 1, cursorCol)
+                    if virtualNewlines {
+                        let cursorRow = editor_buffer_get_cursor_row_virtual(buf!, virtualNewlineLength)
+                        let cursorCol = editor_buffer_get_cursor_col_virtual(buf!, virtualNewlineLength)
+                        
+                        editor_buffer_set_cursor_point_virtual(buf!, cursorRow + 1, cursorCol, virtualNewlineLength)
+                    } else {
+                        let cursorRow = editor_buffer_get_cursor_row(buf!)
+                        let cursorCol = editor_buffer_get_cursor_col(buf!)
+                        
+                        editor_buffer_set_cursor_point(buf!, cursorRow + 1, cursorCol)
+                    }
                 }
                 
-                reload()
+                reloadTableRows(rows: [currentRow - 1, currentRow, currentRow + 1])
             } else if event.keyCode == 126 {
                 // up
+                editor_buffer_set_cursor_is_selection(buf!, event.modifierFlags.contains(.shift) ? 1 : 0)
                 
-                let cursorRow: Int64
-                let cursorCol: Int64
-                if virtualNewlines {
-                    cursorRow = editor_screen_get_cursor_row_virtual(screen!, virtualNewlineLength)
-                    cursorCol = editor_screen_get_cursor_col_virtual(screen!, virtualNewlineLength)
-                    screen = editor_buffer_set_cursor_point_virtual(buf!, cursorRow - 1, cursorCol, virtualNewlineLength)
+                if event.modifierFlags.contains(.command) {
+                    if virtualNewlines {
+                        let cursorRow: Int64 = 0
+                        let cursorCol = editor_buffer_get_cursor_col_virtual(buf!, virtualNewlineLength)
+                        
+                        editor_buffer_set_cursor_point_virtual(buf!, cursorRow, cursorCol, virtualNewlineLength)
+                    } else {
+                        let cursorRow: Int64 = 0
+                        let cursorCol = editor_buffer_get_cursor_col(buf!)
+                        
+                        editor_buffer_set_cursor_point(buf!, cursorRow, cursorCol)
+                    }
                 } else {
-                    cursorRow = editor_screen_get_cursor_row(screen!)
-                    cursorCol = editor_screen_get_cursor_col(screen!)
-                    screen = editor_buffer_set_cursor_point(buf!, cursorRow - 1, cursorCol)
+                    if virtualNewlines {
+                        let cursorRow = editor_buffer_get_cursor_row_virtual(buf!, virtualNewlineLength)
+                        let cursorCol = editor_buffer_get_cursor_col_virtual(buf!, virtualNewlineLength)
+                     
+                        editor_buffer_set_cursor_point_virtual(buf!, cursorRow - 1, cursorCol, virtualNewlineLength)
+                    } else {
+                        let cursorRow = editor_buffer_get_cursor_row(buf!)
+                        let cursorCol = editor_buffer_get_cursor_col(buf!)
+                        
+                        editor_buffer_set_cursor_point(buf!, cursorRow - 1, cursorCol)
+                    }
+                }
+
+                reloadTableRows(rows: [currentRow - 1, currentRow, currentRow + 1])
+            } else if event.keyCode == 36 {
+                // enter
+                editor_buffer_insert(buf!, "\n")
+                
+                reload()
+            } else if event.keyCode == 6 && event.modifierFlags.contains(.command) {
+                // z
+                let undo_idx = editor_buffer_get_undo_index(buf!)
+                if event.modifierFlags.contains(.shift) {
+                    editor_buffer_undo(buf!, undo_idx + 1)
+                } else {
+                    editor_buffer_undo(buf!, undo_idx - 1)
+                }
+                reload()
+            } else if event.keyCode == 5 && event.modifierFlags.contains(.command) {
+                // g
+                let undo_idx = editor_buffer_get_global_undo_index(buf!)
+                if event.modifierFlags.contains(.shift) {
+                    editor_buffer_global_undo(buf!, undo_idx + 1)
+                } else {
+                    editor_buffer_global_undo(buf!, undo_idx - 1)
+                }
+                reload()
+            } else if event.keyCode == 8 && event.modifierFlags.contains(.command) {
+                // c
+                let startCharPos = editor_buffer_get_cursor_pos(buf!)
+                let endCharPos = editor_buffer_get_cursor_selection_start_pos(buf!)
+                
+                // todo(chad): switch if they're backward
+                let stringBuf = editor_buffer_get_text_between_characters(buf!, startCharPos, endCharPos)
+                
+                defer {
+                    editor_buffer_free_buf(stringBuf)
+                }
+                
+                let bufBytes = editor_buffer_get_buf_bytes(stringBuf)
+                if bufBytes != nil {
+                    let swiftString = String(cString: bufBytes!)
+                    pasteboard.setString(swiftString, forType: NSPasteboardTypeString)
+                }
+            } else if event.keyCode == 9 && event.modifierFlags.contains(.command) {
+                // v
+                var clipboardItems: [String] = []
+                for element in pasteboard.pasteboardItems! {
+                    if let str = element.string(forType: "public.utf8-plain-text") {
+                        clipboardItems.append(str)
+                    }
+                }
+                if clipboardItems.count > 0 {
+                    editor_buffer_insert(buf!, clipboardItems[0])   
                 }
                 
                 reload()
-            } else if event.keyCode == 36 {
-                // enter
-                screen = editor_buffer_insert(buf!, "\n")
+            } else if event.keyCode == 0 && event.modifierFlags.contains(.command) {
+                // a
+                let charCount = editor_buffer_get_char_count(buf!)
+                editor_buffer_set_cursor_pos(buf!, 0)
+                editor_buffer_set_cursor_is_selection(buf!, 1)
+                editor_buffer_set_cursor_pos(buf!, charCount)
+                
                 reload()
             } else {
                 // append chars
-                screen = editor_buffer_insert(buf!, chars)
-                reload()
+//                Swift.print(event.keyCode)
+                
+                let isSelection = editor_buffer_cursor_is_selection(buf!) == 1
+                
+                editor_buffer_insert(buf!, chars)
+  
+                if isSelection {
+                    reload()
+                } else {
+                    reloadTableRows(rows: [currentRow - 1, currentRow, currentRow + 1])
+                }
             }
         }
     }
     
-    @IBAction func undoValueChanged(_ sender: NSSlider) {
-        if oldUndoSliderValue != sender.doubleValue {
-            screen = editor_buffer_undo(buf!, Int64(sender.intValue))
-            reload()
-            
-            globalUndoSlider.doubleValue = globalUndoSlider.maxValue
-            oldUndoSliderValue = sender.doubleValue
+    func ensureCursorVisible() {
+        let currentRow: Int
+        if virtualNewlines {
+            currentRow = Int(editor_buffer_get_cursor_row_virtual(buf!, virtualNewlineLength))
+        } else {
+            currentRow = Int(editor_buffer_get_cursor_row(buf!))
+        }
+
+        if currentRow != savedCursorRow {
+            savedCursorRow = currentRow
+            tableView.scrollRowToVisible(currentRow)
         }
     }
     
-    @IBAction func globalUndoValueChanged(_ sender: NSSlider) {
-        if oldGlobalUndoSliderValue != sender.doubleValue {
-            screen = editor_buffer_global_undo(buf!, Int64(globalUndoSlider.intValue))
+    func valueChanged(_ sliderView: SESliderView) {
+        if sliderView == undoSlider {
+            editor_buffer_undo(buf!, Int64(sliderView.savedValue))
             reload()
-            
-            undoSlider.doubleValue = undoSlider.maxValue
-            oldGlobalUndoSliderValue = sender.doubleValue
+        } else if sliderView == globalUndoSlider {
+            editor_buffer_global_undo(buf!, Int64(sliderView.savedValue))
+            reload()
         }
     }
-    ;
 }
