@@ -11,12 +11,25 @@
 		0724AC3C1EAA7C5200E7CFBB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0724AC3B1EAA7C5200E7CFBB /* AppDelegate.swift */; };
 		0724AC401EAA7C5200E7CFBB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0724AC3F1EAA7C5200E7CFBB /* Assets.xcassets */; };
 		0724AC431EAA7C5200E7CFBB /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0724AC411EAA7C5200E7CFBB /* Main.storyboard */; };
-		074EB2301F3F70D900F055E3 /* SETextLineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 074EB22F1F3F70D900F055E3 /* SETextLineView.swift */; };
+		074EB2321F3FA66E00F055E3 /* SELineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 074EB2311F3FA66E00F055E3 /* SELineView.swift */; };
+		074EB2341F3FFD1500F055E3 /* SEWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 074EB2331F3FFD1500F055E3 /* SEWindowController.swift */; };
 		07813CF01F2583E300152E47 /* SETextTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07813CEF1F2583E300152E47 /* SETextTableViewController.swift */; };
 		079D6FC41F186DCE00310B39 /* libse.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 079D6FC21F186BE100310B39 /* libse.a */; };
 		07B8FA291F27C14E00857145 /* SETableCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07B8FA281F27C14E00857145 /* SETableCellView.swift */; };
 		07B8FA2D1F280C5200857145 /* SETableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07B8FA2C1F280C5200857145 /* SETableView.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXBuildRule section */
+		075F151A1F45137F00F911D6 /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			fileType = pattern.proxy;
+			isEditable = 1;
+			outputFiles = (
+			);
+			script = "pushd /Users/chadrussell/Projects/Clion/se/build;\nmake;\npopd;";
+		};
+/* End PBXBuildRule section */
 
 /* Begin PBXFileReference section */
 		071810C51F3B8FE9000FF379 /* SESliderView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SESliderView.swift; sourceTree = "<group>"; };
@@ -26,7 +39,8 @@
 		0724AC421EAA7C5200E7CFBB /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		0724AC441EAA7C5200E7CFBB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0724AC4A1EAA7DF500E7CFBB /* se-macos-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "se-macos-Bridging-Header.h"; sourceTree = "<group>"; };
-		074EB22F1F3F70D900F055E3 /* SETextLineView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SETextLineView.swift; sourceTree = "<group>"; };
+		074EB2311F3FA66E00F055E3 /* SELineView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SELineView.swift; sourceTree = "<group>"; };
+		074EB2331F3FFD1500F055E3 /* SEWindowController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SEWindowController.swift; sourceTree = "<group>"; };
 		07813CEF1F2583E300152E47 /* SETextTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SETextTableViewController.swift; sourceTree = "<group>"; };
 		079D6FC21F186BE100310B39 /* libse.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libse.a; path = ../Clion/se/build/libse.a; sourceTree = "<group>"; };
 		079DE6F91EAAA60A00345299 /* libczmq.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libczmq.a; path = ../../../../usr/local/Cellar/czmq/4.0.2/lib/libczmq.a; sourceTree = "<group>"; };
@@ -67,10 +81,11 @@
 			isa = PBXGroup;
 			children = (
 				0724AC3B1EAA7C5200E7CFBB /* AppDelegate.swift */,
+				074EB2331F3FFD1500F055E3 /* SEWindowController.swift */,
 				071810C51F3B8FE9000FF379 /* SESliderView.swift */,
 				07813CEF1F2583E300152E47 /* SETextTableViewController.swift */,
 				07B8FA281F27C14E00857145 /* SETableCellView.swift */,
-				074EB22F1F3F70D900F055E3 /* SETextLineView.swift */,
+				074EB2311F3FA66E00F055E3 /* SELineView.swift */,
 				07B8FA2C1F280C5200857145 /* SETableView.swift */,
 				0724AC3F1EAA7C5200E7CFBB /* Assets.xcassets */,
 				0724AC411EAA7C5200E7CFBB /* Main.storyboard */,
@@ -101,6 +116,7 @@
 				0724AC361EAA7C5200E7CFBB /* Resources */,
 			);
 			buildRules = (
+				075F151A1F45137F00F911D6 /* PBXBuildRule */,
 			);
 			dependencies = (
 			);
@@ -116,12 +132,12 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0830;
-				LastUpgradeCheck = 0830;
+				LastUpgradeCheck = 0900;
 				ORGANIZATIONNAME = "Chad Russell";
 				TargetAttributes = {
 					0724AC371EAA7C5200E7CFBB = {
 						CreatedOnToolsVersion = 8.3.2;
-						LastSwiftMigration = 0830;
+						LastSwiftMigration = 0900;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -161,9 +177,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				074EB2321F3FA66E00F055E3 /* SELineView.swift in Sources */,
 				071810C61F3B8FE9000FF379 /* SESliderView.swift in Sources */,
-				074EB2301F3F70D900F055E3 /* SETextLineView.swift in Sources */,
 				07B8FA291F27C14E00857145 /* SETableCellView.swift in Sources */,
+				074EB2341F3FFD1500F055E3 /* SEWindowController.swift in Sources */,
 				0724AC3C1EAA7C5200E7CFBB /* AppDelegate.swift in Sources */,
 				07B8FA2D1F280C5200857145 /* SETableView.swift in Sources */,
 				07813CF01F2583E300152E47 /* SETextTableViewController.swift in Sources */,
@@ -194,7 +211,9 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
@@ -202,7 +221,11 @@
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
@@ -228,6 +251,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				"OTHER_SWIFT_FLAGS[arch=*]" = "-Onone";
 				SDKROOT = macosx;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -244,7 +268,9 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
@@ -252,7 +278,11 @@
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
@@ -296,7 +326,8 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "se-macos/se-macos-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = On;
+				SWIFT_VERSION = 4.0;
 			};
 			name = Debug;
 		};
@@ -319,7 +350,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.chadrussell.se-macos";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "se-macos/se-macos-Bridging-Header.h";
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = On;
+				SWIFT_VERSION = 4.0;
 			};
 			name = Release;
 		};

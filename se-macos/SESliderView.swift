@@ -31,7 +31,7 @@ class SESliderView : NSView {
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
         
-        let context = NSGraphicsContext.current()?.cgContext
+        let context = NSGraphicsContext.current?.cgContext
         context?.setFillColor(red: 1.0, green: 0, blue: 0.4, alpha: 1)
         context?.setStrokeColor(CGColor.black)
         

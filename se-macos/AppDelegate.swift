@@ -19,24 +19,37 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Insert code here to tear down your application
     }
     
+    @objc
     @IBAction func seSave(sender: NSMenuItem) {
         // override this in the view controller
     }
     
+    @objc
+    @IBAction func seSaveAs(sender: NSMenuItem) {
+        // override this in the view controller
+    }
+    
+    @objc
     @IBAction func seOpen(sender: NSMenuItem) {
         // override this in the view controller
     }
     
+    @objc
     @IBAction func seChooseFont(sender: NSMenuItem) {
         // override this in the view controller
     }
     
+    @objc
     @IBAction func seIncreaseFontSize(sender: NSMenuItem) {
         // override this in the view controller
     }
     
+    @objc
     @IBAction func seDecreaseFontSIze(sender: NSMenuItem) {
         // override this in the view controller
     }
+    
+    @objc
+    @IBAction func newWindowForTab(_ sender: Any?) { }
 }
 

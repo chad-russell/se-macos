@@ -65,9 +65,24 @@
                                                 <action selector="seSaveWithSender:" target="Ady-hI-5gd" id="H1S-sH-vJ2"/>
                                             </connections>
                                         </menuItem>
+                                        <menuItem title="Save As.." keyEquivalent="S" id="UdQ-XI-ynV" userLabel="Save">
+                                            <connections>
+                                                <action selector="seSaveAsSender:" target="Ady-hI-5gd" id="jJ2-Fy-6vj"/>
+                                            </connections>
+                                        </menuItem>
                                         <menuItem title="Open..." keyEquivalent="o" id="xIJ-Us-Umr">
                                             <connections>
                                                 <action selector="seOpenWithSender:" target="Ady-hI-5gd" id="Qw3-Td-VcE"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="New Tab" keyEquivalent="t" id="ZHZ-mC-Y3z">
+                                            <connections>
+                                                <action selector="newWindowForTab:" target="Ady-hI-5gd" id="leO-1w-9vx"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="Close Tab" keyEquivalent="w" id="Vtb-kg-YXQ">
+                                            <connections>
+                                                <action selector="performClose:" target="Ady-hI-5gd" id="XY9-09-YCL"/>
                                             </connections>
                                         </menuItem>
                                     </items>
@@ -123,12 +138,12 @@
                 <customObject id="Voe-Tx-rLC" customClass="AppDelegate" customModule="se_macos" customModuleProvider="target"/>
                 <customObject id="Ady-hI-5gd" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="75" y="-1"/>
+            <point key="canvasLocation" x="75" y="-35"/>
         </scene>
         <!--Window Controller-->
         <scene sceneID="R2V-B0-nI4">
             <objects>
-                <windowController id="B8D-0N-5wS" sceneMemberID="viewController">
+                <windowController showSeguePresentationStyle="single" id="B8D-0N-5wS" customClass="SEWindowController" customModule="se_macos" customModuleProvider="target" sceneMemberID="viewController">
                     <window key="window" title="se" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" releasedWhenClosed="NO" showsToolbarButton="NO" visibleAtLaunch="NO" animationBehavior="default" id="IQv-IB-iLA">
                         <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
                         <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
@@ -163,13 +178,13 @@
                                     <constraint firstAttribute="height" constant="30" id="vPk-4P-ADs"/>
                                 </constraints>
                             </customView>
-                            <scrollView autohidesScrollers="YES" horizontalLineScroll="70" horizontalPageScroll="10" verticalLineScroll="70" verticalPageScroll="10" usesPredominantAxisScrolling="NO" horizontalScrollElasticity="none" verticalScrollElasticity="none" translatesAutoresizingMaskIntoConstraints="NO" id="oUb-8x-cBC">
+                            <scrollView autohidesScrollers="YES" horizontalLineScroll="138" horizontalPageScroll="10" verticalLineScroll="138" verticalPageScroll="10" usesPredominantAxisScrolling="NO" horizontalScrollElasticity="none" verticalScrollElasticity="none" translatesAutoresizingMaskIntoConstraints="NO" id="oUb-8x-cBC">
                                 <rect key="frame" x="-1" y="-1" width="642" height="241"/>
-                                <clipView key="contentView" copiesOnScroll="NO" id="LAO-56-4qF">
+                                <clipView key="contentView" drawsBackground="NO" copiesOnScroll="NO" id="LAO-56-4qF">
                                     <rect key="frame" x="1" y="1" width="640" height="239"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
-                                        <tableView verticalHuggingPriority="750" mirrorLayoutDirectionWhenInternationalizing="never" columnAutoresizingStyle="lastColumnOnly" selectionHighlightStyle="none" columnReordering="NO" columnResizing="NO" multipleSelection="NO" emptySelection="NO" autosaveColumns="NO" typeSelect="NO" rowHeight="68" rowSizeStyle="automatic" viewBased="YES" floatsGroupRows="NO" id="lgh-yy-mfg" customClass="SETableView" customModule="se_macos" customModuleProvider="target">
+                                        <tableView verticalHuggingPriority="750" mirrorLayoutDirectionWhenInternationalizing="never" columnAutoresizingStyle="lastColumnOnly" selectionHighlightStyle="none" columnReordering="NO" columnResizing="NO" multipleSelection="NO" emptySelection="NO" autosaveColumns="NO" typeSelect="NO" rowHeight="136" rowSizeStyle="automatic" viewBased="YES" floatsGroupRows="NO" id="lgh-yy-mfg" customClass="SETableView" customModule="se_macos" customModuleProvider="target">
                                             <rect key="frame" x="0.0" y="0.0" width="640" height="239"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES"/>
                                             <size key="intercellSpacing" width="3" height="2"/>
@@ -190,11 +205,11 @@
                                                     <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                     <prototypeCellViews>
                                                         <tableCellView identifier="Cell" focusRingType="none" id="swi-8L-tYj" customClass="SETableCellView" customModule="se_macos" customModuleProvider="target">
-                                                            <rect key="frame" x="1" y="1" width="440" height="68"/>
+                                                            <rect key="frame" x="1" y="1" width="440" height="136"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
-                                                                <customView translatesAutoresizingMaskIntoConstraints="NO" id="Hpg-Ba-rEl" customClass="SETextLineView" customModule="se_macos" customModuleProvider="target">
-                                                                    <rect key="frame" x="0.0" y="51" width="440" height="17"/>
+                                                                <customView translatesAutoresizingMaskIntoConstraints="NO" id="jlq-j0-LV7" customClass="SELineView" customModule="se_macos" customModuleProvider="target">
+                                                                    <rect key="frame" x="0.0" y="119" width="440" height="17"/>
                                                                     <subviews>
                                                                         <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="SKb-BU-IRu" userLabel="Line #0">
                                                                             <rect key="frame" x="-2" y="0.0" width="13" height="17"/>
@@ -205,7 +220,7 @@
                                                                             </textFieldCell>
                                                                         </textField>
                                                                         <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" allowsCharacterPickerTouchBarItem="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NfC-rl-7IX" userLabel=":)">
-                                                                            <rect key="frame" x="15" y="0.0" width="173" height="14"/>
+                                                                            <rect key="frame" x="18" y="0.0" width="173" height="14"/>
                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="left" title="This is very real text! :)" id="c8O-A8-rn7" userLabel=":)">
                                                                                 <font key="font" size="13" name="Inconsolata"/>
                                                                                 <color key="textColor" red="0.98431372549019602" green="0.94117647058823528" blue="0.78823529411764703" alpha="1" colorSpace="calibratedRGB"/>
@@ -214,29 +229,154 @@
                                                                         </textField>
                                                                     </subviews>
                                                                     <constraints>
-                                                                        <constraint firstItem="NfC-rl-7IX" firstAttribute="leading" secondItem="SKb-BU-IRu" secondAttribute="trailing" constant="8" id="Gfu-cX-nw9"/>
-                                                                        <constraint firstAttribute="bottom" secondItem="NfC-rl-7IX" secondAttribute="bottom" id="Yln-to-rok"/>
-                                                                        <constraint firstAttribute="bottom" secondItem="SKb-BU-IRu" secondAttribute="bottom" id="nmo-hh-ZUO"/>
-                                                                        <constraint firstItem="SKb-BU-IRu" firstAttribute="leading" secondItem="Hpg-Ba-rEl" secondAttribute="leading" id="rMm-bW-oxI"/>
+                                                                        <constraint firstItem="NfC-rl-7IX" firstAttribute="leading" secondItem="SKb-BU-IRu" secondAttribute="trailing" constant="11" id="94Z-tq-bQw"/>
+                                                                        <constraint firstAttribute="bottom" secondItem="SKb-BU-IRu" secondAttribute="bottom" id="ITy-AX-FBZ"/>
+                                                                        <constraint firstItem="SKb-BU-IRu" firstAttribute="leading" secondItem="jlq-j0-LV7" secondAttribute="leading" id="cJO-a3-jen"/>
+                                                                        <constraint firstAttribute="bottom" secondItem="NfC-rl-7IX" secondAttribute="bottom" id="svv-9m-Wut"/>
                                                                     </constraints>
                                                                     <connections>
-                                                                        <outlet property="textView" destination="NfC-rl-7IX" id="2fV-hD-BUj"/>
+                                                                        <outlet property="lineNumberView" destination="SKb-BU-IRu" id="cLz-YC-6RF"/>
+                                                                        <outlet property="textView" destination="NfC-rl-7IX" id="t5Z-GC-jdu"/>
                                                                     </connections>
                                                                 </customView>
-                                                                <customView translatesAutoresizingMaskIntoConstraints="NO" id="6KH-Qo-LDg" customClass="SETextLineView" customModule="se_macos" customModuleProvider="target">
+                                                                <customView translatesAutoresizingMaskIntoConstraints="NO" id="2ML-uY-i9M" customClass="SELineView" customModule="se_macos" customModuleProvider="target">
+                                                                    <rect key="frame" x="0.0" y="102" width="440" height="17"/>
+                                                                    <subviews>
+                                                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5OD-jY-zJM" userLabel="Line #0">
+                                                                            <rect key="frame" x="-2" y="0.0" width="13" height="17"/>
+                                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" allowsUndo="NO" sendsActionOnEndEditing="YES" alignment="left" title="0" id="48L-l4-tyw" userLabel="Line Number">
+                                                                                <font key="font" metaFont="system"/>
+                                                                                <color key="textColor" red="0.98431372549999996" green="0.94117647059999998" blue="0.78823529410000004" alpha="0.84999999999999998" colorSpace="calibratedRGB"/>
+                                                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                                                            </textFieldCell>
+                                                                        </textField>
+                                                                        <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" allowsCharacterPickerTouchBarItem="NO" translatesAutoresizingMaskIntoConstraints="NO" id="nTm-mC-Kbp" userLabel=":)">
+                                                                            <rect key="frame" x="18" y="0.0" width="173" height="14"/>
+                                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="left" title="This is very real text! :)" id="xZm-Ir-OYu" userLabel=":)">
+                                                                                <font key="font" size="13" name="Inconsolata"/>
+                                                                                <color key="textColor" red="0.98431372549999996" green="0.94117647059999998" blue="0.78823529410000004" alpha="1" colorSpace="calibratedRGB"/>
+                                                                                <color key="backgroundColor" red="0.15686274510000001" green="0.15686274510000001" blue="0.15686274510000001" alpha="1" colorSpace="calibratedRGB"/>
+                                                                            </textFieldCell>
+                                                                        </textField>
+                                                                    </subviews>
+                                                                    <constraints>
+                                                                        <constraint firstItem="5OD-jY-zJM" firstAttribute="leading" secondItem="2ML-uY-i9M" secondAttribute="leading" id="E8J-Jn-DjZ"/>
+                                                                        <constraint firstAttribute="bottom" secondItem="5OD-jY-zJM" secondAttribute="bottom" id="LPv-7O-HJU"/>
+                                                                        <constraint firstAttribute="bottom" secondItem="nTm-mC-Kbp" secondAttribute="bottom" id="V5R-bM-MCw"/>
+                                                                        <constraint firstItem="nTm-mC-Kbp" firstAttribute="leading" secondItem="5OD-jY-zJM" secondAttribute="trailing" constant="11" id="fQd-Yi-Vf1"/>
+                                                                    </constraints>
+                                                                    <connections>
+                                                                        <outlet property="lineNumberView" destination="5OD-jY-zJM" id="Mns-d7-gYm"/>
+                                                                        <outlet property="textView" destination="nTm-mC-Kbp" id="C48-Rw-5bk"/>
+                                                                    </connections>
+                                                                </customView>
+                                                                <customView translatesAutoresizingMaskIntoConstraints="NO" id="DH4-8G-GPs" customClass="SELineView" customModule="se_macos" customModuleProvider="target">
+                                                                    <rect key="frame" x="0.0" y="85" width="440" height="17"/>
+                                                                    <subviews>
+                                                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JIf-zG-teP" userLabel="Line #0">
+                                                                            <rect key="frame" x="-2" y="0.0" width="13" height="17"/>
+                                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" allowsUndo="NO" sendsActionOnEndEditing="YES" alignment="left" title="0" id="Pcl-4L-Vc7" userLabel="Line Number">
+                                                                                <font key="font" metaFont="system"/>
+                                                                                <color key="textColor" red="0.98431372549999996" green="0.94117647059999998" blue="0.78823529410000004" alpha="0.84999999999999998" colorSpace="calibratedRGB"/>
+                                                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                                                            </textFieldCell>
+                                                                        </textField>
+                                                                        <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" allowsCharacterPickerTouchBarItem="NO" translatesAutoresizingMaskIntoConstraints="NO" id="byN-1P-aqM" userLabel=":)">
+                                                                            <rect key="frame" x="18" y="0.0" width="173" height="14"/>
+                                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="left" title="This is very real text! :)" id="1C1-6y-hIA" userLabel=":)">
+                                                                                <font key="font" size="13" name="Inconsolata"/>
+                                                                                <color key="textColor" red="0.98431372549999996" green="0.94117647059999998" blue="0.78823529410000004" alpha="1" colorSpace="calibratedRGB"/>
+                                                                                <color key="backgroundColor" red="0.15686274510000001" green="0.15686274510000001" blue="0.15686274510000001" alpha="1" colorSpace="calibratedRGB"/>
+                                                                            </textFieldCell>
+                                                                        </textField>
+                                                                    </subviews>
+                                                                    <constraints>
+                                                                        <constraint firstAttribute="bottom" secondItem="byN-1P-aqM" secondAttribute="bottom" id="73a-JJ-dKh"/>
+                                                                        <constraint firstAttribute="bottom" secondItem="JIf-zG-teP" secondAttribute="bottom" id="OqW-TO-fLa"/>
+                                                                        <constraint firstItem="JIf-zG-teP" firstAttribute="leading" secondItem="DH4-8G-GPs" secondAttribute="leading" id="WsR-GO-VZH"/>
+                                                                        <constraint firstItem="byN-1P-aqM" firstAttribute="leading" secondItem="JIf-zG-teP" secondAttribute="trailing" constant="11" id="fsH-3e-yED"/>
+                                                                    </constraints>
+                                                                    <connections>
+                                                                        <outlet property="lineNumberView" destination="JIf-zG-teP" id="ZW7-bY-E1L"/>
+                                                                        <outlet property="textView" destination="byN-1P-aqM" id="2JB-O8-OB3"/>
+                                                                    </connections>
+                                                                </customView>
+                                                                <customView translatesAutoresizingMaskIntoConstraints="NO" id="g91-pg-hwm" customClass="SELineView" customModule="se_macos" customModuleProvider="target">
+                                                                    <rect key="frame" x="0.0" y="68" width="440" height="17"/>
+                                                                    <subviews>
+                                                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ndM-B8-PKd" userLabel="Line #0">
+                                                                            <rect key="frame" x="-2" y="0.0" width="13" height="17"/>
+                                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" allowsUndo="NO" sendsActionOnEndEditing="YES" alignment="left" title="0" id="RO1-3A-usd" userLabel="Line Number">
+                                                                                <font key="font" metaFont="system"/>
+                                                                                <color key="textColor" red="0.98431372549999996" green="0.94117647059999998" blue="0.78823529410000004" alpha="0.84999999999999998" colorSpace="calibratedRGB"/>
+                                                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                                                            </textFieldCell>
+                                                                        </textField>
+                                                                        <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" allowsCharacterPickerTouchBarItem="NO" translatesAutoresizingMaskIntoConstraints="NO" id="gtF-8o-PVx" userLabel=":)">
+                                                                            <rect key="frame" x="18" y="0.0" width="173" height="14"/>
+                                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="left" title="This is very real text! :)" id="pQk-Gr-oIO" userLabel=":)">
+                                                                                <font key="font" size="13" name="Inconsolata"/>
+                                                                                <color key="textColor" red="0.98431372549999996" green="0.94117647059999998" blue="0.78823529410000004" alpha="1" colorSpace="calibratedRGB"/>
+                                                                                <color key="backgroundColor" red="0.15686274510000001" green="0.15686274510000001" blue="0.15686274510000001" alpha="1" colorSpace="calibratedRGB"/>
+                                                                            </textFieldCell>
+                                                                        </textField>
+                                                                    </subviews>
+                                                                    <constraints>
+                                                                        <constraint firstItem="ndM-B8-PKd" firstAttribute="leading" secondItem="g91-pg-hwm" secondAttribute="leading" id="EXU-pS-CgC"/>
+                                                                        <constraint firstItem="gtF-8o-PVx" firstAttribute="leading" secondItem="ndM-B8-PKd" secondAttribute="trailing" constant="11" id="IUo-oe-IFX"/>
+                                                                        <constraint firstAttribute="bottom" secondItem="gtF-8o-PVx" secondAttribute="bottom" id="K99-f1-Rpf"/>
+                                                                        <constraint firstAttribute="bottom" secondItem="ndM-B8-PKd" secondAttribute="bottom" id="cRT-4i-T4Q"/>
+                                                                    </constraints>
+                                                                    <connections>
+                                                                        <outlet property="lineNumberView" destination="ndM-B8-PKd" id="EgI-wY-Otd"/>
+                                                                        <outlet property="textView" destination="gtF-8o-PVx" id="50D-ss-Q5N"/>
+                                                                    </connections>
+                                                                </customView>
+                                                                <customView translatesAutoresizingMaskIntoConstraints="NO" id="fuQ-23-wkD" customClass="SELineView" customModule="se_macos" customModuleProvider="target">
+                                                                    <rect key="frame" x="0.0" y="51" width="440" height="17"/>
+                                                                    <subviews>
+                                                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="77c-BF-lpg" userLabel="Line #0">
+                                                                            <rect key="frame" x="-2" y="0.0" width="13" height="17"/>
+                                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" allowsUndo="NO" sendsActionOnEndEditing="YES" alignment="left" title="0" id="I9R-ZL-nn8" userLabel="Line Number">
+                                                                                <font key="font" metaFont="system"/>
+                                                                                <color key="textColor" red="0.98431372549999996" green="0.94117647059999998" blue="0.78823529410000004" alpha="0.84999999999999998" colorSpace="calibratedRGB"/>
+                                                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                                                            </textFieldCell>
+                                                                        </textField>
+                                                                        <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" allowsCharacterPickerTouchBarItem="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fNh-GZ-LIu" userLabel=":)">
+                                                                            <rect key="frame" x="18" y="0.0" width="173" height="14"/>
+                                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="left" title="This is very real text! :)" id="6YL-f5-3eT" userLabel=":)">
+                                                                                <font key="font" size="13" name="Inconsolata"/>
+                                                                                <color key="textColor" red="0.98431372549999996" green="0.94117647059999998" blue="0.78823529410000004" alpha="1" colorSpace="calibratedRGB"/>
+                                                                                <color key="backgroundColor" red="0.15686274510000001" green="0.15686274510000001" blue="0.15686274510000001" alpha="1" colorSpace="calibratedRGB"/>
+                                                                            </textFieldCell>
+                                                                        </textField>
+                                                                    </subviews>
+                                                                    <constraints>
+                                                                        <constraint firstItem="77c-BF-lpg" firstAttribute="leading" secondItem="fuQ-23-wkD" secondAttribute="leading" id="Nho-lr-mZo"/>
+                                                                        <constraint firstAttribute="bottom" secondItem="fNh-GZ-LIu" secondAttribute="bottom" id="SoI-fp-Bg5"/>
+                                                                        <constraint firstItem="fNh-GZ-LIu" firstAttribute="leading" secondItem="77c-BF-lpg" secondAttribute="trailing" constant="11" id="usT-Tx-H9F"/>
+                                                                        <constraint firstAttribute="bottom" secondItem="77c-BF-lpg" secondAttribute="bottom" id="xyb-00-H6k"/>
+                                                                    </constraints>
+                                                                    <connections>
+                                                                        <outlet property="lineNumberView" destination="77c-BF-lpg" id="5zW-11-Za3"/>
+                                                                        <outlet property="textView" destination="fNh-GZ-LIu" id="osN-TC-YhA"/>
+                                                                    </connections>
+                                                                </customView>
+                                                                <customView translatesAutoresizingMaskIntoConstraints="NO" id="kMu-fw-bzM" customClass="SELineView" customModule="se_macos" customModuleProvider="target">
                                                                     <rect key="frame" x="0.0" y="34" width="440" height="17"/>
                                                                     <subviews>
-                                                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="k3W-96-liy" userLabel="Line #1">
-                                                                            <rect key="frame" x="-2" y="0.0" width="10" height="17"/>
-                                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" allowsUndo="NO" sendsActionOnEndEditing="YES" alignment="left" title="1" id="Ndg-8k-odx" userLabel="Line Number">
+                                                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="mbb-s2-9dg" userLabel="Line #0">
+                                                                            <rect key="frame" x="-2" y="0.0" width="13" height="17"/>
+                                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" allowsUndo="NO" sendsActionOnEndEditing="YES" alignment="left" title="0" id="LSF-uB-7ak" userLabel="Line Number">
                                                                                 <font key="font" metaFont="system"/>
                                                                                 <color key="textColor" red="0.98431372549999996" green="0.94117647059999998" blue="0.78823529410000004" alpha="0.84999999999999998" colorSpace="calibratedRGB"/>
                                                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                             </textFieldCell>
                                                                         </textField>
-                                                                        <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" allowsCharacterPickerTouchBarItem="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Dah-gf-BUc" userLabel=":)">
-                                                                            <rect key="frame" x="12" y="0.0" width="173" height="14"/>
-                                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="left" title="This is very real text! :)" id="3BM-nh-SjR" userLabel=":)">
+                                                                        <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" allowsCharacterPickerTouchBarItem="NO" translatesAutoresizingMaskIntoConstraints="NO" id="IZr-RZ-Hdi" userLabel=":)">
+                                                                            <rect key="frame" x="18" y="0.0" width="173" height="14"/>
+                                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="left" title="This is very real text! :)" id="wB0-v4-FYO" userLabel=":)">
                                                                                 <font key="font" size="13" name="Inconsolata"/>
                                                                                 <color key="textColor" red="0.98431372549999996" green="0.94117647059999998" blue="0.78823529410000004" alpha="1" colorSpace="calibratedRGB"/>
                                                                                 <color key="backgroundColor" red="0.15686274510000001" green="0.15686274510000001" blue="0.15686274510000001" alpha="1" colorSpace="calibratedRGB"/>
@@ -244,26 +384,30 @@
                                                                         </textField>
                                                                     </subviews>
                                                                     <constraints>
-                                                                        <constraint firstAttribute="bottom" secondItem="Dah-gf-BUc" secondAttribute="bottom" id="99O-uo-GNx"/>
-                                                                        <constraint firstItem="k3W-96-liy" firstAttribute="leading" secondItem="6KH-Qo-LDg" secondAttribute="leading" id="mU9-Vc-iGx"/>
-                                                                        <constraint firstAttribute="bottom" secondItem="k3W-96-liy" secondAttribute="bottom" id="qi4-TO-Xal"/>
-                                                                        <constraint firstItem="Dah-gf-BUc" firstAttribute="leading" secondItem="k3W-96-liy" secondAttribute="trailing" constant="8" id="vFk-T9-0cf"/>
+                                                                        <constraint firstItem="IZr-RZ-Hdi" firstAttribute="leading" secondItem="mbb-s2-9dg" secondAttribute="trailing" constant="11" id="6zP-QT-I91"/>
+                                                                        <constraint firstAttribute="bottom" secondItem="mbb-s2-9dg" secondAttribute="bottom" id="D1k-en-amI"/>
+                                                                        <constraint firstItem="mbb-s2-9dg" firstAttribute="leading" secondItem="kMu-fw-bzM" secondAttribute="leading" id="a0a-rL-7PE"/>
+                                                                        <constraint firstAttribute="bottom" secondItem="IZr-RZ-Hdi" secondAttribute="bottom" id="dxQ-T2-jiq"/>
                                                                     </constraints>
+                                                                    <connections>
+                                                                        <outlet property="lineNumberView" destination="mbb-s2-9dg" id="rsJ-LU-ddK"/>
+                                                                        <outlet property="textView" destination="IZr-RZ-Hdi" id="Qhh-do-CVq"/>
+                                                                    </connections>
                                                                 </customView>
-                                                                <customView translatesAutoresizingMaskIntoConstraints="NO" id="A5p-cF-eRy" customClass="SETextLineView" customModule="se_macos" customModuleProvider="target">
+                                                                <customView translatesAutoresizingMaskIntoConstraints="NO" id="sJ0-c9-P6q" customClass="SELineView" customModule="se_macos" customModuleProvider="target">
                                                                     <rect key="frame" x="0.0" y="17" width="440" height="17"/>
                                                                     <subviews>
-                                                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dXF-IA-pde" userLabel="Line #2">
-                                                                            <rect key="frame" x="-2" y="0.0" width="12" height="17"/>
-                                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" allowsUndo="NO" sendsActionOnEndEditing="YES" alignment="left" title="2" id="rkf-v1-FHP" userLabel="Line Number">
+                                                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="caQ-w3-5bW" userLabel="Line #0">
+                                                                            <rect key="frame" x="-2" y="0.0" width="13" height="17"/>
+                                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" allowsUndo="NO" sendsActionOnEndEditing="YES" alignment="left" title="0" id="gG0-SZ-gCq" userLabel="Line Number">
                                                                                 <font key="font" metaFont="system"/>
                                                                                 <color key="textColor" red="0.98431372549999996" green="0.94117647059999998" blue="0.78823529410000004" alpha="0.84999999999999998" colorSpace="calibratedRGB"/>
                                                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                             </textFieldCell>
                                                                         </textField>
-                                                                        <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" allowsCharacterPickerTouchBarItem="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zsU-1w-HI2" userLabel=":)">
-                                                                            <rect key="frame" x="14" y="0.0" width="173" height="14"/>
-                                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="left" title="This is very real text! :)" id="7fc-NE-Fqa" userLabel=":)">
+                                                                        <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" allowsCharacterPickerTouchBarItem="NO" translatesAutoresizingMaskIntoConstraints="NO" id="QBX-0V-5ko" userLabel=":)">
+                                                                            <rect key="frame" x="18" y="0.0" width="173" height="14"/>
+                                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="left" title="This is very real text! :)" id="c4Q-Ts-TKO" userLabel=":)">
                                                                                 <font key="font" size="13" name="Inconsolata"/>
                                                                                 <color key="textColor" red="0.98431372549999996" green="0.94117647059999998" blue="0.78823529410000004" alpha="1" colorSpace="calibratedRGB"/>
                                                                                 <color key="backgroundColor" red="0.15686274510000001" green="0.15686274510000001" blue="0.15686274510000001" alpha="1" colorSpace="calibratedRGB"/>
@@ -271,26 +415,30 @@
                                                                         </textField>
                                                                     </subviews>
                                                                     <constraints>
-                                                                        <constraint firstItem="zsU-1w-HI2" firstAttribute="leading" secondItem="dXF-IA-pde" secondAttribute="trailing" constant="8" id="VbZ-hU-pkC"/>
-                                                                        <constraint firstAttribute="bottom" secondItem="zsU-1w-HI2" secondAttribute="bottom" id="hzK-4w-9nn"/>
-                                                                        <constraint firstItem="dXF-IA-pde" firstAttribute="leading" secondItem="A5p-cF-eRy" secondAttribute="leading" id="qkP-uj-X1V"/>
-                                                                        <constraint firstAttribute="bottom" secondItem="dXF-IA-pde" secondAttribute="bottom" id="yLc-of-oyp"/>
+                                                                        <constraint firstAttribute="bottom" secondItem="caQ-w3-5bW" secondAttribute="bottom" id="0Cp-eq-u5Q"/>
+                                                                        <constraint firstAttribute="bottom" secondItem="QBX-0V-5ko" secondAttribute="bottom" id="358-Yo-ADx"/>
+                                                                        <constraint firstItem="caQ-w3-5bW" firstAttribute="leading" secondItem="sJ0-c9-P6q" secondAttribute="leading" id="UWZ-4z-0Cu"/>
+                                                                        <constraint firstItem="QBX-0V-5ko" firstAttribute="leading" secondItem="caQ-w3-5bW" secondAttribute="trailing" constant="11" id="b3K-rM-oVC"/>
                                                                     </constraints>
+                                                                    <connections>
+                                                                        <outlet property="lineNumberView" destination="caQ-w3-5bW" id="J37-k2-IeI"/>
+                                                                        <outlet property="textView" destination="QBX-0V-5ko" id="J9h-Fn-gYU"/>
+                                                                    </connections>
                                                                 </customView>
-                                                                <customView translatesAutoresizingMaskIntoConstraints="NO" id="LQP-dP-pUa" customClass="SETextLineView" customModule="se_macos" customModuleProvider="target">
+                                                                <customView translatesAutoresizingMaskIntoConstraints="NO" id="1OG-3h-Uhi" customClass="SELineView" customModule="se_macos" customModuleProvider="target">
                                                                     <rect key="frame" x="0.0" y="0.0" width="440" height="17"/>
                                                                     <subviews>
-                                                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="lcJ-mm-6d8" userLabel="Line #3">
+                                                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="RxB-0L-ftP" userLabel="Line #0">
                                                                             <rect key="frame" x="-2" y="0.0" width="13" height="17"/>
-                                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" allowsUndo="NO" sendsActionOnEndEditing="YES" alignment="left" title="3" id="kYU-7i-jEs" userLabel="Line Number">
+                                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" allowsUndo="NO" sendsActionOnEndEditing="YES" alignment="left" title="0" id="cW7-My-vin" userLabel="Line Number">
                                                                                 <font key="font" metaFont="system"/>
-                                                                                <color key="textColor" red="0.98431372549999996" green="0.94117647059999998" blue="0.78823529410000004" alpha="0.84999999999999998" colorSpace="calibratedRGB"/>
+                                                                                <color key="textColor" red="1" green="1" blue="0.90196078431372551" alpha="0.84999999999999998" colorSpace="calibratedRGB"/>
                                                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                             </textFieldCell>
                                                                         </textField>
-                                                                        <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" allowsCharacterPickerTouchBarItem="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9V3-fc-Q3M" userLabel=":)">
-                                                                            <rect key="frame" x="15" y="0.0" width="173" height="14"/>
-                                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="left" title="This is very real text! :)" id="Phl-vu-34v" userLabel=":)">
+                                                                        <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" allowsCharacterPickerTouchBarItem="NO" translatesAutoresizingMaskIntoConstraints="NO" id="FgO-fP-pNN" userLabel=":)">
+                                                                            <rect key="frame" x="18" y="0.0" width="173" height="14"/>
+                                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="left" title="This is very real text! :)" id="cLC-eU-PVt" userLabel=":)">
                                                                                 <font key="font" size="13" name="Inconsolata"/>
                                                                                 <color key="textColor" red="0.98431372549999996" green="0.94117647059999998" blue="0.78823529410000004" alpha="1" colorSpace="calibratedRGB"/>
                                                                                 <color key="backgroundColor" red="0.15686274510000001" green="0.15686274510000001" blue="0.15686274510000001" alpha="1" colorSpace="calibratedRGB"/>
@@ -298,37 +446,61 @@
                                                                         </textField>
                                                                     </subviews>
                                                                     <constraints>
-                                                                        <constraint firstAttribute="bottom" secondItem="9V3-fc-Q3M" secondAttribute="bottom" id="3oC-B8-dSE"/>
-                                                                        <constraint firstItem="lcJ-mm-6d8" firstAttribute="leading" secondItem="LQP-dP-pUa" secondAttribute="leading" id="BVo-CQ-bmS"/>
-                                                                        <constraint firstAttribute="bottom" secondItem="lcJ-mm-6d8" secondAttribute="bottom" id="WsA-SK-2Ji"/>
-                                                                        <constraint firstItem="9V3-fc-Q3M" firstAttribute="leading" secondItem="lcJ-mm-6d8" secondAttribute="trailing" constant="8" id="rYd-HI-Dss"/>
+                                                                        <constraint firstAttribute="bottom" secondItem="FgO-fP-pNN" secondAttribute="bottom" id="HHh-Xb-CG0"/>
+                                                                        <constraint firstItem="RxB-0L-ftP" firstAttribute="leading" secondItem="1OG-3h-Uhi" secondAttribute="leading" id="PpQ-2E-1dU"/>
+                                                                        <constraint firstAttribute="bottom" secondItem="RxB-0L-ftP" secondAttribute="bottom" id="XjS-Ed-vZp"/>
+                                                                        <constraint firstItem="FgO-fP-pNN" firstAttribute="leading" secondItem="RxB-0L-ftP" secondAttribute="trailing" constant="11" id="aRB-9X-Y4m"/>
                                                                     </constraints>
+                                                                    <connections>
+                                                                        <outlet property="lineNumberView" destination="RxB-0L-ftP" id="32c-hX-T7O"/>
+                                                                        <outlet property="textView" destination="FgO-fP-pNN" id="a9H-p9-t8D"/>
+                                                                    </connections>
                                                                 </customView>
                                                             </subviews>
                                                             <constraints>
-                                                                <constraint firstItem="Hpg-Ba-rEl" firstAttribute="leading" secondItem="swi-8L-tYj" secondAttribute="leading" id="6EA-OU-u0d"/>
-                                                                <constraint firstAttribute="trailing" secondItem="6KH-Qo-LDg" secondAttribute="trailing" id="8fz-6V-vBQ"/>
-                                                                <constraint firstItem="6KH-Qo-LDg" firstAttribute="height" secondItem="Hpg-Ba-rEl" secondAttribute="height" id="E3p-ru-Vbl"/>
-                                                                <constraint firstItem="LQP-dP-pUa" firstAttribute="height" secondItem="Hpg-Ba-rEl" secondAttribute="height" id="Ewj-dY-Xez"/>
-                                                                <constraint firstAttribute="bottom" secondItem="LQP-dP-pUa" secondAttribute="bottom" id="F3E-tP-Dr0"/>
-                                                                <constraint firstItem="6KH-Qo-LDg" firstAttribute="top" secondItem="Hpg-Ba-rEl" secondAttribute="bottom" id="RSZ-zj-anx"/>
-                                                                <constraint firstItem="LQP-dP-pUa" firstAttribute="top" secondItem="A5p-cF-eRy" secondAttribute="bottom" id="Spl-Yp-YpH"/>
-                                                                <constraint firstAttribute="trailing" secondItem="LQP-dP-pUa" secondAttribute="trailing" id="bdg-hs-qwO"/>
-                                                                <constraint firstItem="A5p-cF-eRy" firstAttribute="top" secondItem="6KH-Qo-LDg" secondAttribute="bottom" id="cvp-yt-mDB"/>
-                                                                <constraint firstItem="LQP-dP-pUa" firstAttribute="leading" secondItem="swi-8L-tYj" secondAttribute="leading" id="dht-ye-DR4"/>
-                                                                <constraint firstItem="Hpg-Ba-rEl" firstAttribute="top" secondItem="swi-8L-tYj" secondAttribute="top" id="fex-LN-z9b"/>
-                                                                <constraint firstAttribute="trailing" secondItem="A5p-cF-eRy" secondAttribute="trailing" id="gb0-Z4-ahG"/>
-                                                                <constraint firstItem="A5p-cF-eRy" firstAttribute="leading" secondItem="swi-8L-tYj" secondAttribute="leading" id="ieN-yv-4Wg"/>
-                                                                <constraint firstItem="A5p-cF-eRy" firstAttribute="height" secondItem="Hpg-Ba-rEl" secondAttribute="height" id="jqv-P9-Vvw"/>
-                                                                <constraint firstAttribute="trailing" secondItem="Hpg-Ba-rEl" secondAttribute="trailing" id="mBa-bG-5Ua"/>
-                                                                <constraint firstItem="6KH-Qo-LDg" firstAttribute="leading" secondItem="swi-8L-tYj" secondAttribute="leading" id="wXt-co-9Rh"/>
+                                                                <constraint firstItem="g91-pg-hwm" firstAttribute="top" secondItem="DH4-8G-GPs" secondAttribute="bottom" id="0VN-tL-5dY"/>
+                                                                <constraint firstItem="1OG-3h-Uhi" firstAttribute="height" secondItem="jlq-j0-LV7" secondAttribute="height" id="3U6-wA-eH6"/>
+                                                                <constraint firstItem="fuQ-23-wkD" firstAttribute="leading" secondItem="swi-8L-tYj" secondAttribute="leading" id="6hW-QI-HE0"/>
+                                                                <constraint firstItem="1OG-3h-Uhi" firstAttribute="leading" secondItem="swi-8L-tYj" secondAttribute="leading" id="8V2-iE-Ep3"/>
+                                                                <constraint firstItem="g91-pg-hwm" firstAttribute="leading" secondItem="swi-8L-tYj" secondAttribute="leading" id="8mg-dm-5eq"/>
+                                                                <constraint firstAttribute="trailing" secondItem="2ML-uY-i9M" secondAttribute="trailing" id="9lP-Ld-LOL"/>
+                                                                <constraint firstItem="2ML-uY-i9M" firstAttribute="height" secondItem="jlq-j0-LV7" secondAttribute="height" id="ACa-io-8Ne"/>
+                                                                <constraint firstItem="DH4-8G-GPs" firstAttribute="height" secondItem="jlq-j0-LV7" secondAttribute="height" id="B9x-sU-FM5"/>
+                                                                <constraint firstAttribute="trailing" secondItem="1OG-3h-Uhi" secondAttribute="trailing" id="FNN-1v-2fi"/>
+                                                                <constraint firstItem="kMu-fw-bzM" firstAttribute="height" secondItem="jlq-j0-LV7" secondAttribute="height" id="Jsv-4n-S1d"/>
+                                                                <constraint firstAttribute="trailing" secondItem="g91-pg-hwm" secondAttribute="trailing" id="MTf-Qt-Ee7"/>
+                                                                <constraint firstItem="g91-pg-hwm" firstAttribute="height" secondItem="jlq-j0-LV7" secondAttribute="height" id="R1A-vy-md4"/>
+                                                                <constraint firstAttribute="trailing" secondItem="jlq-j0-LV7" secondAttribute="trailing" id="TVF-rF-P0i"/>
+                                                                <constraint firstItem="fuQ-23-wkD" firstAttribute="height" secondItem="jlq-j0-LV7" secondAttribute="height" id="ZwM-Do-sLG"/>
+                                                                <constraint firstAttribute="trailing" secondItem="kMu-fw-bzM" secondAttribute="trailing" id="aHJ-Fp-in5"/>
+                                                                <constraint firstItem="sJ0-c9-P6q" firstAttribute="leading" secondItem="swi-8L-tYj" secondAttribute="leading" id="chU-R5-O32"/>
+                                                                <constraint firstItem="fuQ-23-wkD" firstAttribute="top" secondItem="g91-pg-hwm" secondAttribute="bottom" id="d9n-Z9-bed"/>
+                                                                <constraint firstItem="DH4-8G-GPs" firstAttribute="leading" secondItem="swi-8L-tYj" secondAttribute="leading" id="eeV-Iu-BWc"/>
+                                                                <constraint firstItem="sJ0-c9-P6q" firstAttribute="top" secondItem="kMu-fw-bzM" secondAttribute="bottom" id="fbe-bR-pbG"/>
+                                                                <constraint firstAttribute="trailing" secondItem="DH4-8G-GPs" secondAttribute="trailing" id="iRe-kM-h1C"/>
+                                                                <constraint firstItem="jlq-j0-LV7" firstAttribute="top" secondItem="swi-8L-tYj" secondAttribute="top" id="kQl-fC-aTm"/>
+                                                                <constraint firstItem="DH4-8G-GPs" firstAttribute="top" secondItem="2ML-uY-i9M" secondAttribute="bottom" id="kog-HF-jye"/>
+                                                                <constraint firstAttribute="trailing" secondItem="fuQ-23-wkD" secondAttribute="trailing" id="n79-Jq-Lhe"/>
+                                                                <constraint firstItem="sJ0-c9-P6q" firstAttribute="height" secondItem="jlq-j0-LV7" secondAttribute="height" id="nG6-1v-dpY"/>
+                                                                <constraint firstItem="2ML-uY-i9M" firstAttribute="top" secondItem="jlq-j0-LV7" secondAttribute="bottom" id="rPf-yc-E6e"/>
+                                                                <constraint firstAttribute="bottom" secondItem="1OG-3h-Uhi" secondAttribute="bottom" id="rmh-qZ-4IA"/>
+                                                                <constraint firstAttribute="trailing" secondItem="sJ0-c9-P6q" secondAttribute="trailing" id="skp-yU-ftj"/>
+                                                                <constraint firstItem="2ML-uY-i9M" firstAttribute="leading" secondItem="swi-8L-tYj" secondAttribute="leading" id="suG-hv-zsB"/>
+                                                                <constraint firstItem="kMu-fw-bzM" firstAttribute="top" secondItem="fuQ-23-wkD" secondAttribute="bottom" id="tzC-xT-KXt"/>
+                                                                <constraint firstAttribute="trailing" secondItem="jlq-j0-LV7" secondAttribute="trailing" id="ugX-Nk-aAw"/>
+                                                                <constraint firstItem="1OG-3h-Uhi" firstAttribute="top" secondItem="sJ0-c9-P6q" secondAttribute="bottom" id="w3i-tC-CIp"/>
+                                                                <constraint firstItem="kMu-fw-bzM" firstAttribute="leading" secondItem="swi-8L-tYj" secondAttribute="leading" id="xYY-qp-3QQ"/>
+                                                                <constraint firstItem="jlq-j0-LV7" firstAttribute="leading" secondItem="swi-8L-tYj" secondAttribute="leading" id="zOY-ks-FrK"/>
                                                             </constraints>
                                                             <connections>
-                                                                <outlet property="row0" destination="Hpg-Ba-rEl" id="UJA-zz-pWc"/>
-                                                                <outlet property="row1" destination="6KH-Qo-LDg" id="37a-ie-4Lp"/>
-                                                                <outlet property="row2" destination="A5p-cF-eRy" id="YKm-94-nxe"/>
-                                                                <outlet property="row3" destination="LQP-dP-pUa" id="cRK-hi-iap"/>
-                                                                <outlet property="textField" destination="NfC-rl-7IX" id="Niy-w6-i9C"/>
+                                                                <outlet property="row0" destination="jlq-j0-LV7" id="QH9-UY-DT5"/>
+                                                                <outlet property="row1" destination="2ML-uY-i9M" id="z8m-Ap-hJL"/>
+                                                                <outlet property="row2" destination="DH4-8G-GPs" id="0Q3-ch-POK"/>
+                                                                <outlet property="row3" destination="g91-pg-hwm" id="33d-RD-49L"/>
+                                                                <outlet property="row4" destination="fuQ-23-wkD" id="oeF-v5-UH4"/>
+                                                                <outlet property="row5" destination="kMu-fw-bzM" id="I1V-JJ-gcA"/>
+                                                                <outlet property="row6" destination="sJ0-c9-P6q" id="8ku-Hj-3hA"/>
+                                                                <outlet property="row7" destination="1OG-3h-Uhi" id="v3V-2j-dsR"/>
                                                             </connections>
                                                         </tableCellView>
                                                     </prototypeCellViews>
@@ -340,7 +512,7 @@
                                             </connections>
                                         </tableView>
                                     </subviews>
-                                    <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                    <color key="backgroundColor" red="0.085476345486111105" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                                 </clipView>
                                 <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="0GZ-fI-BT4">
                                     <rect key="frame" x="1" y="157" width="450" height="16"/>
