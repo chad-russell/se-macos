@@ -16,7 +16,7 @@ class SEWindowController: NSWindowController {
         super.windowDidLoad()
     }
     
-    @IBAction override func newWindowForTab(_ sender: Any?) {
+    func newWindowForTab() {
         let story = self.storyboard
         let windowController: SEWindowController = story?.instantiateInitialController() as! SEWindowController
         
@@ -25,6 +25,30 @@ class SEWindowController: NSWindowController {
         
         windowController.window?.orderFront(self.window)
         windowController.window?.makeKey()
+    }
+    
+    override func keyDown(with event: NSEvent) {
+        if let vc = self.contentViewController as? SEBufferViewController {
+            vc.handleKeyDown(with: event)
+        }
+    }
+    
+    override func mouseDown(with event: NSEvent) {
+        if let vc = self.contentViewController as? SEBufferViewController {
+            vc.handleMouseDown(with: event)
+        }
+    }
+    
+    override func mouseDragged(with event: NSEvent) {
+        if let vc = self.contentViewController as? SEBufferViewController {
+            vc.handleMouseDragged(with: event)
+        }
+    }
+    
+    override func mouseUp(with event: NSEvent) {
+        if let vc = self.contentViewController as? SEBufferViewController {
+            vc.handleMouseUp(with: event)
+        }
     }
     
 }

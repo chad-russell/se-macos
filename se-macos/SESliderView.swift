@@ -41,9 +41,10 @@ class SESliderView : NSView {
     func rect() -> CGRect {
         let width = self.bounds.width / 100
         
-        var x: CGFloat = 0
-        if self.max != 0 {
-            x = CGFloat(self.value) / CGFloat(self.max) * (self.bounds.width - width)
+        let margin: CGFloat = 5
+        var x: CGFloat = margin
+        if self.max != 1 {
+            x = margin + CGFloat(self.value) / CGFloat(self.max - 1) * (self.bounds.width - (width + 2 * margin))
         }
         
         return CGRect(x: x,

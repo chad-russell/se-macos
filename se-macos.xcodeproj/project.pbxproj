@@ -7,16 +7,23 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		070760431F54547000D6FB9B /* SECommandPaneViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 070760421F54547000D6FB9B /* SECommandPaneViewController.swift */; };
 		071810C61F3B8FE9000FF379 /* SESliderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 071810C51F3B8FE9000FF379 /* SESliderView.swift */; };
+		0719ABA91F54DE33006A8457 /* SEBufferViewControllerBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0719ABA81F54DE33006A8457 /* SEBufferViewControllerBase.swift */; };
+		071C15061F4B187E006166FB /* SEEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 071C15051F4B187E006166FB /* SEEditorView.swift */; };
 		0724AC3C1EAA7C5200E7CFBB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0724AC3B1EAA7C5200E7CFBB /* AppDelegate.swift */; };
 		0724AC401EAA7C5200E7CFBB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0724AC3F1EAA7C5200E7CFBB /* Assets.xcassets */; };
 		0724AC431EAA7C5200E7CFBB /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0724AC411EAA7C5200E7CFBB /* Main.storyboard */; };
-		074EB2321F3FA66E00F055E3 /* SELineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 074EB2311F3FA66E00F055E3 /* SELineView.swift */; };
 		074EB2341F3FFD1500F055E3 /* SEWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 074EB2331F3FFD1500F055E3 /* SEWindowController.swift */; };
-		07813CF01F2583E300152E47 /* SETextTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07813CEF1F2583E300152E47 /* SETextTableViewController.swift */; };
+		07805D3B1F4FA80E00D5A42E /* Find.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 07805D3A1F4FA80E00D5A42E /* Find.storyboard */; };
+		07805D3E1F4FB2D400D5A42E /* SEFindWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07805D3D1F4FB2D400D5A42E /* SEFindWindowController.swift */; };
+		07805D401F4FB95A00D5A42E /* SEFindViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07805D3F1F4FB95A00D5A42E /* SEFindViewController.swift */; };
+		07805D441F506D5300D5A42E /* SEGutterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07805D431F506D5300D5A42E /* SEGutterView.swift */; };
 		079D6FC41F186DCE00310B39 /* libse.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 079D6FC21F186BE100310B39 /* libse.a */; };
-		07B8FA291F27C14E00857145 /* SETableCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07B8FA281F27C14E00857145 /* SETableCellView.swift */; };
-		07B8FA2D1F280C5200857145 /* SETableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07B8FA2C1F280C5200857145 /* SETableView.swift */; };
+		07B042901F4B7633002EEFD2 /* SEBufferViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07B0428F1F4B7633002EEFD2 /* SEBufferViewController.swift */; };
+		07D4EE921F5356D2002A9CFE /* SEBufferDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07D4EE911F5356D2002A9CFE /* SEBufferDelegate.swift */; };
+		07D4EE961F53C34C002A9CFE /* SECommandPaneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07D4EE951F53C34C002A9CFE /* SECommandPaneView.swift */; };
+		07D4EE991F544E6E002A9CFE /* SECommandPaneSegue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07D4EE981F544E6E002A9CFE /* SECommandPaneSegue.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
@@ -32,20 +39,27 @@
 /* End PBXBuildRule section */
 
 /* Begin PBXFileReference section */
+		070760421F54547000D6FB9B /* SECommandPaneViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SECommandPaneViewController.swift; sourceTree = "<group>"; };
 		071810C51F3B8FE9000FF379 /* SESliderView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SESliderView.swift; sourceTree = "<group>"; };
+		0719ABA81F54DE33006A8457 /* SEBufferViewControllerBase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SEBufferViewControllerBase.swift; sourceTree = "<group>"; };
+		071C15051F4B187E006166FB /* SEEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SEEditorView.swift; sourceTree = "<group>"; };
 		0724AC381EAA7C5200E7CFBB /* se-macos.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "se-macos.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		0724AC3B1EAA7C5200E7CFBB /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		0724AC3F1EAA7C5200E7CFBB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		0724AC421EAA7C5200E7CFBB /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		0724AC441EAA7C5200E7CFBB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0724AC4A1EAA7DF500E7CFBB /* se-macos-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "se-macos-Bridging-Header.h"; sourceTree = "<group>"; };
-		074EB2311F3FA66E00F055E3 /* SELineView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SELineView.swift; sourceTree = "<group>"; };
 		074EB2331F3FFD1500F055E3 /* SEWindowController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SEWindowController.swift; sourceTree = "<group>"; };
-		07813CEF1F2583E300152E47 /* SETextTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SETextTableViewController.swift; sourceTree = "<group>"; };
+		07805D3A1F4FA80E00D5A42E /* Find.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Find.storyboard; sourceTree = "<group>"; };
+		07805D3D1F4FB2D400D5A42E /* SEFindWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SEFindWindowController.swift; sourceTree = "<group>"; };
+		07805D3F1F4FB95A00D5A42E /* SEFindViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SEFindViewController.swift; sourceTree = "<group>"; };
+		07805D431F506D5300D5A42E /* SEGutterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SEGutterView.swift; sourceTree = "<group>"; };
 		079D6FC21F186BE100310B39 /* libse.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libse.a; path = ../Clion/se/build/libse.a; sourceTree = "<group>"; };
 		079DE6F91EAAA60A00345299 /* libczmq.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libczmq.a; path = ../../../../usr/local/Cellar/czmq/4.0.2/lib/libczmq.a; sourceTree = "<group>"; };
-		07B8FA281F27C14E00857145 /* SETableCellView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SETableCellView.swift; sourceTree = "<group>"; };
-		07B8FA2C1F280C5200857145 /* SETableView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SETableView.swift; sourceTree = "<group>"; };
+		07B0428F1F4B7633002EEFD2 /* SEBufferViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SEBufferViewController.swift; sourceTree = "<group>"; };
+		07D4EE911F5356D2002A9CFE /* SEBufferDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SEBufferDelegate.swift; sourceTree = "<group>"; };
+		07D4EE951F53C34C002A9CFE /* SECommandPaneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SECommandPaneView.swift; sourceTree = "<group>"; };
+		07D4EE981F544E6E002A9CFE /* SECommandPaneSegue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SECommandPaneSegue.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -82,17 +96,38 @@
 			children = (
 				0724AC3B1EAA7C5200E7CFBB /* AppDelegate.swift */,
 				074EB2331F3FFD1500F055E3 /* SEWindowController.swift */,
+				07D4EE971F53C364002A9CFE /* Command Pane */,
+				07805D3C1F4FB21300D5A42E /* Find */,
+				07805D411F5063C200D5A42E /* Buffer */,
 				071810C51F3B8FE9000FF379 /* SESliderView.swift */,
-				07813CEF1F2583E300152E47 /* SETextTableViewController.swift */,
-				07B8FA281F27C14E00857145 /* SETableCellView.swift */,
-				074EB2311F3FA66E00F055E3 /* SELineView.swift */,
-				07B8FA2C1F280C5200857145 /* SETableView.swift */,
-				0724AC3F1EAA7C5200E7CFBB /* Assets.xcassets */,
 				0724AC411EAA7C5200E7CFBB /* Main.storyboard */,
+				0724AC3F1EAA7C5200E7CFBB /* Assets.xcassets */,
 				0724AC441EAA7C5200E7CFBB /* Info.plist */,
 				0724AC4A1EAA7DF500E7CFBB /* se-macos-Bridging-Header.h */,
 			);
 			path = "se-macos";
+			sourceTree = "<group>";
+		};
+		07805D3C1F4FB21300D5A42E /* Find */ = {
+			isa = PBXGroup;
+			children = (
+				07805D3A1F4FA80E00D5A42E /* Find.storyboard */,
+				07805D3D1F4FB2D400D5A42E /* SEFindWindowController.swift */,
+				07805D3F1F4FB95A00D5A42E /* SEFindViewController.swift */,
+			);
+			path = Find;
+			sourceTree = "<group>";
+		};
+		07805D411F5063C200D5A42E /* Buffer */ = {
+			isa = PBXGroup;
+			children = (
+				0719ABA81F54DE33006A8457 /* SEBufferViewControllerBase.swift */,
+				07B0428F1F4B7633002EEFD2 /* SEBufferViewController.swift */,
+				07D4EE911F5356D2002A9CFE /* SEBufferDelegate.swift */,
+				071C15051F4B187E006166FB /* SEEditorView.swift */,
+				07805D431F506D5300D5A42E /* SEGutterView.swift */,
+			);
+			path = Buffer;
 			sourceTree = "<group>";
 		};
 		079DE6F81EAAA60A00345299 /* Frameworks */ = {
@@ -102,6 +137,16 @@
 				079DE6F91EAAA60A00345299 /* libczmq.a */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		07D4EE971F53C364002A9CFE /* Command Pane */ = {
+			isa = PBXGroup;
+			children = (
+				070760421F54547000D6FB9B /* SECommandPaneViewController.swift */,
+				07D4EE951F53C34C002A9CFE /* SECommandPaneView.swift */,
+				07D4EE981F544E6E002A9CFE /* SECommandPaneSegue.swift */,
+			);
+			path = "Command Pane";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -166,6 +211,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0724AC401EAA7C5200E7CFBB /* Assets.xcassets in Resources */,
+				07805D3B1F4FA80E00D5A42E /* Find.storyboard in Resources */,
 				0724AC431EAA7C5200E7CFBB /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -177,13 +223,19 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				074EB2321F3FA66E00F055E3 /* SELineView.swift in Sources */,
+				07D4EE921F5356D2002A9CFE /* SEBufferDelegate.swift in Sources */,
 				071810C61F3B8FE9000FF379 /* SESliderView.swift in Sources */,
-				07B8FA291F27C14E00857145 /* SETableCellView.swift in Sources */,
+				07D4EE961F53C34C002A9CFE /* SECommandPaneView.swift in Sources */,
 				074EB2341F3FFD1500F055E3 /* SEWindowController.swift in Sources */,
+				0719ABA91F54DE33006A8457 /* SEBufferViewControllerBase.swift in Sources */,
+				07805D441F506D5300D5A42E /* SEGutterView.swift in Sources */,
+				070760431F54547000D6FB9B /* SECommandPaneViewController.swift in Sources */,
+				07B042901F4B7633002EEFD2 /* SEBufferViewController.swift in Sources */,
 				0724AC3C1EAA7C5200E7CFBB /* AppDelegate.swift in Sources */,
-				07B8FA2D1F280C5200857145 /* SETableView.swift in Sources */,
-				07813CF01F2583E300152E47 /* SETextTableViewController.swift in Sources */,
+				07805D401F4FB95A00D5A42E /* SEFindViewController.swift in Sources */,
+				07D4EE991F544E6E002A9CFE /* SECommandPaneSegue.swift in Sources */,
+				07805D3E1F4FB2D400D5A42E /* SEFindWindowController.swift in Sources */,
+				071C15061F4B187E006166FB /* SEEditorView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

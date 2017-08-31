@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="13178.6" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+    <dependencies>
+        <deployment identifier="macosx"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="13178.6"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Window Controller-->
+        <scene sceneID="JSK-03-reo">
+            <objects>
+                <windowController storyboardIdentifier="FindWindowController" id="et6-MM-Ony" customClass="SEFindWindowController" customModule="se_macos" customModuleProvider="target" sceneMemberID="viewController">
+                    <window key="window" title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" releasedWhenClosed="NO" showsToolbarButton="NO" visibleAtLaunch="NO" frameAutosaveName="" animationBehavior="default" id="c1J-Zt-VGX">
+                        <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
+                        <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
+                        <rect key="contentRect" x="196" y="240" width="480" height="270"/>
+                        <rect key="screenRect" x="0.0" y="0.0" width="1440" height="877"/>
+                        <connections>
+                            <outlet property="delegate" destination="et6-MM-Ony" id="XAZ-An-bkA"/>
+                        </connections>
+                    </window>
+                    <connections>
+                        <segue destination="TUo-9g-QY4" kind="relationship" relationship="window.shadowedContentViewController" id="34X-gM-Tig"/>
+                    </connections>
+                </windowController>
+                <customObject id="7JV-AG-R36" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-441" y="376"/>
+        </scene>
+        <!--Find View Controller-->
+        <scene sceneID="eUA-LV-3wU">
+            <objects>
+                <viewController id="TUo-9g-QY4" customClass="SEFindViewController" customModule="se_macos" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" id="UpR-4k-QwH">
+                        <rect key="frame" x="0.0" y="0.0" width="437" height="91"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <subviews>
+                            <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="9j5-c8-6pU">
+                                <rect key="frame" x="20" y="49" width="397" height="22"/>
+                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="7kG-kn-gaG">
+                                    <font key="font" metaFont="system"/>
+                                    <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                            </textField>
+                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="ysn-JA-kGB">
+                                <rect key="frame" x="177" y="13" width="83" height="32"/>
+                                <buttonCell key="cell" type="push" title="Search" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="iO7-w7-Oor">
+                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                </buttonCell>
+                                <connections>
+                                    <action selector="search:" target="TUo-9g-QY4" id="mCu-VM-nFd"/>
+                                </connections>
+                            </button>
+                        </subviews>
+                        <constraints>
+                            <constraint firstItem="ysn-JA-kGB" firstAttribute="top" secondItem="9j5-c8-6pU" secondAttribute="bottom" constant="8" id="7wF-dM-6cJ"/>
+                            <constraint firstItem="9j5-c8-6pU" firstAttribute="leading" secondItem="UpR-4k-QwH" secondAttribute="leading" constant="20" id="BIl-qf-viT"/>
+                            <constraint firstAttribute="trailing" secondItem="9j5-c8-6pU" secondAttribute="trailing" constant="20" id="IJX-UN-izG"/>
+                            <constraint firstItem="ysn-JA-kGB" firstAttribute="centerX" secondItem="UpR-4k-QwH" secondAttribute="centerX" id="Ysc-he-LFg"/>
+                            <constraint firstItem="9j5-c8-6pU" firstAttribute="top" secondItem="UpR-4k-QwH" secondAttribute="top" constant="20" id="taq-ny-EnB"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="searchTextField" destination="9j5-c8-6pU" id="wGF-VR-bh9"/>
+                    </connections>
+                </viewController>
+                <customObject id="wR0-RD-7AD" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-440.5" y="690.5"/>
+        </scene>
+    </scenes>
+</document>
