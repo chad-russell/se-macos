@@ -56,9 +56,9 @@ class SEEditorView: NSView {
             cursorLayerParent.sublayers?.removeLast()
         }
         
-        let firstDrawableLine = Int64(floor(dirtyRect.origin.y / preferences.charHeight()))
+        let firstDrawableLine = Int64(floor(dirtyRect.origin.y / preferences.charHeight))
         let firstLine = max(firstDrawableLine - 2, 0)
-        let lastDrawableLine = Int64(floor((dirtyRect.origin.y + dirtyRect.height) / preferences.charHeight()))
+        let lastDrawableLine = Int64(floor((dirtyRect.origin.y + dirtyRect.height) / preferences.charHeight))
         let lastLine = min(lastDrawableLine + 2, lineCount)
         if firstLine <= lastLine {
             for line in firstLine ... lastLine {
@@ -82,7 +82,7 @@ class SEEditorView: NSView {
     func drawLine(line: Int64, scrollToCursor: Bool = false) {
         guard let delegate = delegate else { return }
         let preferences = delegate.preferences
-        let charHeight = preferences.charHeight()
+        let charHeight = preferences.charHeight
         
         let context = NSGraphicsContext.current?.cgContext
         
@@ -101,7 +101,7 @@ class SEEditorView: NSView {
         let swiftString = String(cString: bufBytes)
         
         let x: CGFloat = 3
-        let y = CGFloat(line + 1) * preferences.charHeight()
+        let y = CGFloat(line + 1) * preferences.charHeight
         let cursorY = y + 4
         context?.textMatrix = CGAffineTransform(scaleX: 1, y: -1).concatenating(CGAffineTransform(translationX: x, y: y))
         
@@ -111,12 +111,6 @@ class SEEditorView: NSView {
         
         if !scrollToCursor {
             CTLineDraw(ctLine, context!)
-        }
-        
-        let lineLength = CTLineGetBoundsWithOptions(ctLine, CTLineBoundsOptions.useOpticalBounds)
-        if lineLength.width > longestLine {
-            longestLine = lineLength.width
-            delegate.lineWidthConstraint?.constant = longestLine + 30
         }
         
         let cursorCount = editor_buffer_get_cursor_count(delegate.buf!)
@@ -138,8 +132,10 @@ class SEEditorView: NSView {
                 var selectionRect: CGRect? = nil
                 context?.setFillColor(preferences.selectionColor.cgColor)
 
-                let cursorSelectionCol: Int64
-                let cursorSelectionRow: Int64
+                var cursorSelectionCol: Int64
+                var cursorSelectionRow: Int64
+                
+                var realCursorCol = cursorCol
 
                 if preferences.virtualNewlines {
                     cursorSelectionCol = editor_buffer_get_cursor_selection_start_col_virtual(delegate.buf!, cursorIdx, preferences.virtualNewlineLength)
@@ -148,14 +144,39 @@ class SEEditorView: NSView {
                     cursorSelectionCol = editor_buffer_get_cursor_selection_start_col(delegate.buf!, cursorIdx)
                     cursorSelectionRow = editor_buffer_get_cursor_selection_start_row(delegate.buf!, cursorIdx)
                 }
+                
+                let (isVisual, isLine) = delegate.mode.isVisual()
+                if isVisual && isLine {
+                    if cursorRow <= cursorSelectionRow {
+                        let lastCol: Int64
+                        if preferences.virtualNewlines {
+                            lastCol = editor_buffer_get_line_length_virtual(delegate.buf!, cursorSelectionRow, preferences.virtualNewlineLength)
+                        } else {
+                            lastCol = editor_buffer_get_line_length(delegate.buf!, cursorSelectionRow)
+                        }
+                        
+                        realCursorCol = 0
+                        cursorSelectionCol = lastCol
+                    } else if cursorRow > cursorSelectionRow {
+                        let lastCol: Int64
+                        if preferences.virtualNewlines {
+                            lastCol = editor_buffer_get_line_length_virtual(delegate.buf!, cursorRow, preferences.virtualNewlineLength)
+                        } else {
+                            lastCol = editor_buffer_get_line_length(delegate.buf!, cursorRow)
+                        }
+                        
+                        realCursorCol = lastCol
+                        cursorSelectionCol = 0
+                    }
+                }
 
                 if cursorRow == line {
                     if cursorRow == cursorSelectionRow {
-                        let startOffset = CTLineGetOffsetForStringIndex(ctLine, CFIndex(cursorCol), nil)
+                        let startOffset = CTLineGetOffsetForStringIndex(ctLine, CFIndex(realCursorCol), nil)
                         let endOffset = CTLineGetOffsetForStringIndex(ctLine, CFIndex(cursorSelectionCol), nil)
                         selectionRect = CGRect(x: x + startOffset, y: cursorY - charHeight, width: endOffset - startOffset, height: charHeight)
                     } else if cursorSelectionRow > cursorRow {
-                        let startOffset = CTLineGetOffsetForStringIndex(ctLine, CFIndex(cursorCol), nil)
+                        let startOffset = CTLineGetOffsetForStringIndex(ctLine, CFIndex(realCursorCol), nil)
 
                         let lastCol: Int64
                         if preferences.virtualNewlines {
@@ -167,7 +188,7 @@ class SEEditorView: NSView {
                         let endOffset = CTLineGetOffsetForStringIndex(ctLine, CFIndex(lastCol), nil)
                         selectionRect = CGRect(x: x + startOffset, y: cursorY - charHeight, width: endOffset - startOffset, height: charHeight)
                     } else {
-                        let startOffset = CTLineGetOffsetForStringIndex(ctLine, CFIndex(cursorCol), nil)
+                        let startOffset = CTLineGetOffsetForStringIndex(ctLine, CFIndex(realCursorCol), nil)
                         let endOffset = CTLineGetOffsetForStringIndex(ctLine, 0, nil)
                         selectionRect = CGRect(x: x + startOffset, y: cursorY - charHeight, width: endOffset - startOffset, height: charHeight)
                     }
@@ -218,6 +239,8 @@ class SEEditorView: NSView {
                 var width: CGFloat
                 switch delegate.mode {
                 case .insert: width = 1.5
+                case .visual:
+                    fallthrough
                 case .normal:
                     let endOffset = CTLineGetOffsetForStringIndex(ctLine, CFIndex(cursorCol + 1), nil)
                     width = endOffset - startOffset
@@ -248,9 +271,9 @@ class SEEditorView: NSView {
     func mouseDownHelper(event: NSEvent, drag: Bool = false) {
         guard let delegate = delegate else { return }
         let preferences = delegate.preferences
-
+        
         let clickedPoint = self.convert(event.locationInWindow, from: nil)
-        let clickedLine = Int64(floor(clickedPoint.y / preferences.charHeight()))
+        let clickedLine = Int64(floor(clickedPoint.y / preferences.charHeight))
 
         let stringBuf: OpaquePointer!
         if preferences.virtualNewlines {
@@ -273,24 +296,55 @@ class SEEditorView: NSView {
         let gutterOffset: CGFloat = 3
         let clickedCol = CTLineGetStringIndexForPosition(ctLine, CGPoint(x: clickedPoint.x - gutterOffset, y: 0))
 
-        if drag {
-            editor_buffer_set_cursor_is_selection(delegate.buf!, 1)
-        } else {
-            editor_buffer_set_cursor_is_selection(delegate.buf!, event.modifierFlags.contains(.shift) ? 1 : 0)
-        }
         if event.modifierFlags.contains(.command) {
-            if preferences.virtualNewlines {
-                editor_buffer_add_cursor_at_point_virtual(delegate.buf!, clickedLine, Int64(clickedCol), preferences.virtualNewlineLength)
-            } else {
-                editor_buffer_add_cursor_at_point(delegate.buf!, clickedLine, Int64(clickedCol))
+            if !drag {
+                if preferences.virtualNewlines {
+                    editor_buffer_add_cursor_at_point_virtual(delegate.buf!, clickedLine, Int64(clickedCol), preferences.virtualNewlineLength)
+                } else {
+                    editor_buffer_add_cursor_at_point(delegate.buf!, clickedLine, Int64(clickedCol))
+                }
             }
         } else {
-            if preferences.virtualNewlines {
+            if drag || event.modifierFlags.contains(.shift) {
+                editor_buffer_set_cursor_is_selection(delegate.buf!, 1)
+                
+                if preferences.virtualNewlines {
+                    editor_buffer_set_cursor_point_virtual(delegate.buf!, clickedLine, Int64(clickedCol), preferences.virtualNewlineLength)
+                } else {
+                    editor_buffer_set_cursor_point(delegate.buf!, clickedLine, Int64(clickedCol))
+                }
+                
+                for cursorIdx in 0..<editor_buffer_get_cursor_count(delegate.buf!) {
+                    let pos = editor_buffer_get_cursor_pos(delegate.buf!, cursorIdx)
+                    let selectionPos = editor_buffer_get_cursor_selection_start_pos(delegate.buf!, cursorIdx)
+                    
+                    if pos == selectionPos {
+                        editor_buffer_set_cursor_is_selection_for_cursor_index(delegate.buf!, cursorIdx, 0)
+                    }
+                }
+            } else if preferences.virtualNewlines {
+                editor_buffer_set_cursor_is_selection(delegate.buf!, 0)
                 editor_buffer_set_cursor_point_virtual(delegate.buf!, clickedLine, Int64(clickedCol), preferences.virtualNewlineLength)
             } else {
+                editor_buffer_set_cursor_is_selection(delegate.buf!, 0)
                 editor_buffer_set_cursor_point(delegate.buf!, clickedLine, Int64(clickedCol))
             }
+            
+            sort_and_merge_cursors(delegate.buf!)
         }
+        
         self.needsDisplay = true
     }
+    
+//    override func mouseUp(with event: NSEvent) {
+//        guard let delegate = delegate else { return }
+//
+//        for i in 0..<editor_buffer_get_cursor_count(delegate.buf!) {
+//            let cursorPos = editor_buffer_get_cursor_pos(delegate.buf!, i)
+//            let selectionPos = editor_buffer_get_cursor_selection_start_pos(delegate.buf!, i)
+//            if cursorPos == selectionPos {
+//                editor_buffer_set_cursor_is_selection_for_cursor_index(delegate.buf!, i, 0)
+//            }
+//        }
+//    }
 }

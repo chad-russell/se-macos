@@ -18,8 +18,13 @@ class SEFindViewController: NSViewController {
     }
     
     @IBAction func search(_ sender: Any) {
-        let appDelegate = NSApplication.shared.delegate as? AppDelegate
-        appDelegate?.currentEditor?.search(searchTextField.stringValue)
+        let currentWindowController = NSApplication.shared.mainWindow?.windowController as? SEFindWindowController
+        currentWindowController?.currentEditor?.search(searchTextField.stringValue)
+    }
+    
+    @IBAction func searchBackward(_ sender: Any) {
+        let currentWindowController = NSApplication.shared.mainWindow?.windowController as? SEFindWindowController
+        currentWindowController?.currentEditor?.searchBackward(searchTextField.stringValue)
     }
     
 }

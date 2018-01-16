@@ -18,18 +18,49 @@ class SEBufferViewController: SEBufferViewControllerBase {
     @IBOutlet weak var editorViewWidth: NSLayoutConstraint!
     @IBOutlet weak var editorViewHeight: NSLayoutConstraint!
     
+    @IBOutlet weak var footerView: NSView!
+    @IBOutlet weak var modeLabel: NSTextField!
+    @IBOutlet weak var positionLabel: NSTextField!
+    @IBOutlet weak var fileExtensionLabel: NSTextField!
+    
+    @IBOutlet weak var treeView: SETreeView!
+    @IBOutlet weak var treeViewWidth: NSLayoutConstraint!
+    @IBOutlet weak var treeViewMinWidth: NSLayoutConstraint!
+    @IBOutlet weak var treeViewResizer: SETreeViewResizer!
+    @IBOutlet weak var outlineView: NSOutlineView!
+    
     override var lineWidthConstraint: NSLayoutConstraint? { return editorViewWidth }
     
     var commandViewController: SECommandPaneViewController?
     
     var showingCommandView = false
+    var lastMouseDownInsideView = false
+    
+    var outlineItems: [OutlineItem] = []
+    
+    func getFileOutlineItem(url: URL) -> OutlineItem {
+        do {
+            var isDir: ObjCBool = false
+            if FileManager.default.fileExists(atPath: url.path, isDirectory: &isDir) {
+                if isDir.boolValue {
+                    var children: [OutlineItem] = []
+                    for child in try FileManager.default.contentsOfDirectory(atPath: url.path) {
+                        children.append(getFileOutlineItem(url: url.appendingPathComponent(child)))
+                    }
+                    return OutlineItem(name: url, children: children)
+                }
+            }
+        } catch {
+            print("error: \(error)")
+        }
+        
+        return OutlineItem(name: url, children: [])
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         self.gutterView.delegate = self
-        
-        gutterView.buf = buf
         
         undoSlider.max = 0;
         undoSlider.value = 0;
@@ -42,9 +73,23 @@ class SEBufferViewController: SEBufferViewControllerBase {
         gutterView.enclosingScrollView?.horizontalScroller?.alphaValue = 0
         gutterView.enclosingScrollView?.verticalScroller?.alphaValue = 0
         
+        self.fileExtensionLabel.stringValue = "No File Extension"
+        
+        self.treeView.delegate = self
+        self.treeView.resizer = treeViewResizer
+        self.treeViewResizer.delegate = self.treeView
+        
+        outlineItems = [getFileOutlineItem(url: URL(fileURLWithPath: "/Users/chadrussell/Projects/text"))]
+        self.outlineView.reloadData()
+        
         let synchronizedContentView = editorView.enclosingScrollView!.contentView
         synchronizedContentView.postsBoundsChangedNotifications = true
         NotificationCenter.default.addObserver(self, selector: #selector(synchronizedViewContentBoundsDidChange), name: NSView.boundsDidChangeNotification, object: synchronizedContentView)
+    }
+    
+    override func viewWillDisappear() {
+        NotificationCenter.default.removeObserver(self)
+        editor_buffer_destroy(buf!)
     }
     
     @objc
@@ -60,6 +105,8 @@ class SEBufferViewController: SEBufferViewControllerBase {
     }
     
     override func handleMouseDown(with theEvent: NSEvent) {
+        self.lastMouseDownInsideView = true
+        
         if showingCommandView {
             self.commandViewController?.handleMouseDown(with: theEvent)
             return
@@ -69,6 +116,8 @@ class SEBufferViewController: SEBufferViewControllerBase {
     }
     
     override func handleMouseDragged(with event: NSEvent) {
+        if !self.lastMouseDownInsideView { return }
+        
         if showingCommandView {
             self.commandViewController?.handleMouseDragged(with: event)
             return
@@ -78,12 +127,12 @@ class SEBufferViewController: SEBufferViewControllerBase {
     }
     
     override func handleMouseUp(with theEvent: NSEvent) {
+        self.lastMouseDownInsideView = false
+        
         if showingCommandView {
             self.commandViewController?.handleMouseUp(with: theEvent)
             return
         }
-        
-        super.handleMouseUp(with: theEvent)
     }
     
     func hideCommandView() {
@@ -114,6 +163,32 @@ class SEBufferViewController: SEBufferViewControllerBase {
             // cmd + p
             toggleCommandView()
             return
+        } else if event.keyCode == 40 && event.modifierFlags.contains(.command) {
+            // cmd + k
+            let isHiding = !self.treeView.isHidden
+            if !isHiding {
+                self.treeView.isHidden = false
+                self.treeViewResizer.isHidden = false
+            } else {
+                self.treeViewMinWidth.constant = 0
+            }
+            
+            let defaultExpandedWidth: CGFloat = 200
+            
+            NSAnimationContext.runAnimationGroup({_ in
+                NSAnimationContext.current.duration = 0.1
+                NSAnimationContext.current.timingFunction =
+                    CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseOut)
+                self.treeViewWidth.animator().constant = isHiding ? 0 : defaultExpandedWidth
+            }, completionHandler: {
+                if isHiding {
+                    self.treeView.isHidden = true
+                    self.treeViewResizer.isHidden = true
+                } else {
+                    self.treeViewMinWidth.constant = defaultExpandedWidth
+                }
+            })
+            return
         }
         
         if showingCommandView {
@@ -138,10 +213,10 @@ class SEBufferViewController: SEBufferViewControllerBase {
         // undo/redo slider stuff
         self.undoSlider.max = Int(editor_buffer_get_undo_size(buf!))
         self.undoSlider.value = Int(editor_buffer_get_undo_index(buf!))
-        
+
         self.globalUndoSlider.max = Int(editor_buffer_get_global_undo_size(buf!))
         self.globalUndoSlider.value = Int(editor_buffer_get_global_undo_index(buf!))
-        
+
         // calculate height of buffer view and update if necessary
         let lineCount: Int64
         if preferences.virtualNewlines {
@@ -149,31 +224,37 @@ class SEBufferViewController: SEBufferViewControllerBase {
         } else {
             lineCount = editor_buffer_get_line_count(buf!)
         }
-        
-        let height = (CGFloat(lineCount) + 1) * preferences.charHeight()
+
+        let height = (CGFloat(lineCount) + 1) * preferences.charHeight
         if editorViewHeight.constant != height {
             editorViewHeight.constant = height
         }
-        
+
         self.gutterView.needsDisplay = true
         if showingCommandView {
-            let height = preferences.charHeight() + 12
+            let height = preferences.charHeight + 12
             if commandViewController?.paneHeight.constant != height {
                 commandViewController?.paneHeight.constant = height
             }
             self.commandViewController?.reload()
             self.commandViewController?.tableView.reloadData()
         }
-        
+
         // update gutter view dimensions
         if let gutterView = self.gutterView {
             if !preferences.showGutter {
                 gutterViewWidth.constant = 0
                 gutterView.isHidden = true
             } else {
-                let charWidth = preferences.charWidth()
+                let charWidth = preferences.charWidth
                 if buf != nil {
-                    let lineCount = editor_buffer_get_line_count(buf!)
+                    let lineCount: Int64
+                    if preferences.virtualNewlines {
+                        lineCount = editor_buffer_get_line_count_virtual(buf!, preferences.virtualNewlineLength)
+                    } else {
+                        lineCount = editor_buffer_get_line_count(buf!)
+                    }
+
                     if lineCount < 11 {
                         gutterViewWidth.constant = charWidth * 2 + gutterView.margin * 2
                     } else {
@@ -186,9 +267,33 @@ class SEBufferViewController: SEBufferViewControllerBase {
                 gutterView.isHidden = false
             }
         }
+
+        // update labels
+        let cursorCount = editor_buffer_get_cursor_count(buf!)
+        if cursorCount > 1 {
+            positionLabel.stringValue = "Multiple Cursors"
+        } else {
+            let line: Int64
+            let column: Int64
+            if self.preferences.virtualNewlines {
+                line = editor_buffer_get_cursor_row_virtual(buf!, 0, preferences.virtualNewlineLength)
+                column = editor_buffer_get_cursor_col_virtual(buf!, 0, preferences.virtualNewlineLength)
+            } else {
+                line = editor_buffer_get_cursor_row(buf!, 0)
+                column = editor_buffer_get_cursor_col(buf!, 0)
+            }
+            positionLabel.stringValue = "Line \(line), Column \(column)"
+        }
+
+        modeLabel.stringValue = "\(self.mode.description())"
         
         self.view.layer?.backgroundColor = preferences.editorBackgroundColor.cgColor
         
+        // @todo(chad): is there a better place to put this wantsLayer stuff??
+        // in viewDidLoad it is already too late :(
+        if !self.footerView.wantsLayer { self.footerView.wantsLayer = true }
+        self.footerView.layer?.backgroundColor = preferences.footerBackgroundColor.cgColor
+
         super.reload()
     }
     
@@ -198,18 +303,43 @@ class SEBufferViewController: SEBufferViewControllerBase {
         dialog.title = "Choose a file"
         dialog.showsResizeIndicator = true
         dialog.showsHiddenFiles = true
-        dialog.canChooseDirectories = false
+        dialog.canChooseDirectories = true
         dialog.canCreateDirectories = false
         dialog.allowsMultipleSelection = false
         
         if dialog.runModal() == NSApplication.ModalResponse.OK {
             guard let result = dialog.url else { return }
             
-            self.view.window?.title = result.lastPathComponent
-            editor_buffer_open_file(self.buf!, UInt32(preferences.virtualNewlineLength), result.path)
+            outlineItems = [getFileOutlineItem(url: result)]
+            self.outlineView.reloadData()
             
-            reload()
+            var isDirectory: ObjCBool = false
+            if FileManager.default.fileExists(atPath: result.path, isDirectory: &isDirectory) {
+                if !isDirectory.boolValue {
+                    self.view.window?.title = result.lastPathComponent
+                    self.fileExtensionLabel.stringValue = ".\(result.pathExtension)"
+                    
+                    DispatchQueue.global(qos: .userInteractive).async {
+                        editor_buffer_open_file(self.buf!, UInt32(self.preferences.virtualNewlineLength), result.path)
+                        DispatchQueue.main.async {
+                            self.reload()
+                        }
+                    }
+                }
+            }
         }
+    }
+    
+    override func loadConfigFile() {
+        super.loadConfigFile()
+        
+        self.positionLabel.textColor = preferences.footerTextColor
+        self.modeLabel.textColor = preferences.footerTextColor
+        self.fileExtensionLabel.textColor = preferences.footerTextColor
+        
+        self.positionLabel.font = preferences.editorFont
+        self.modeLabel.font = preferences.editorFont
+        self.fileExtensionLabel.font = preferences.editorFont
     }
     
     func save() {
@@ -246,8 +376,28 @@ class SEBufferViewController: SEBufferViewControllerBase {
     }
     
     func search(_ searchStr: String) {
+        editor_buffer_make_single_cursor(buf!)
+        
         let cursorPos = editor_buffer_get_cursor_pos(buf!, 0)
-        let foundChar = editor_buffer_search_find_first_occurrence(buf!, searchStr, cursorPos)
+        let foundChar = editor_buffer_search_forward(buf!, searchStr, cursorPos)
+        if foundChar != -1 {
+            editor_buffer_set_cursor_is_selection(buf!, 0)
+            editor_buffer_set_cursor_pos(buf!, foundChar)
+            editor_buffer_set_cursor_is_selection(buf!, 1)
+            editor_buffer_set_cursor_pos(buf!, foundChar + Int64(searchStr.count))
+            drawLastLine()
+            reload()
+        }
+    }
+    
+    func searchBackward(_ searchStr: String) {
+        editor_buffer_make_single_cursor(buf!)
+        
+        let cursorPos = editor_buffer_get_cursor_pos(buf!, 0)
+        let cursorSelectionPos = editor_buffer_get_cursor_selection_start_pos(buf!, 0)
+        let realCursorPos = min(cursorPos, cursorSelectionPos) - 1
+        
+        let foundChar = editor_buffer_search_backward(buf!, searchStr, realCursorPos)
         if foundChar != -1 {
             editor_buffer_set_cursor_is_selection(buf!, 0)
             editor_buffer_set_cursor_pos(buf!, foundChar)

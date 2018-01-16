@@ -17,7 +17,7 @@ class SECommandPaneViewController: SEBufferViewControllerBase {
     var bufferVC: SEBufferViewController?
     
     override func reload() {
-        let height = preferences.charHeight() + 12
+        let height = preferences.charHeight + 12
         if paneHeight.constant != height {
             paneHeight.constant = height
         }
@@ -43,6 +43,7 @@ class SECommandPaneViewController: SEBufferViewControllerBase {
         switch mode {
         case .insert: handleKeyDownForInsertMode(event)
         case .normal: handleKeyDownForNormalMode(event)
+        case .visual: handleKeyDownForNormalMode(event)
         }
         
         reload()

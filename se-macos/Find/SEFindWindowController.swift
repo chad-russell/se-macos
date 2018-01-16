@@ -11,6 +11,7 @@ import Cocoa
 class SEFindWindowController: NSWindowController {
 
     var appDelegate: AppDelegate?
+    var currentEditor: SEBufferViewController?
     
     class func loadFromNib() -> SEFindWindowController {
         let vc = NSStoryboard(name: NSStoryboard.Name("Find"), bundle: nil).instantiateController(withIdentifier: NSStoryboard.SceneIdentifier("FindWindowController")) as! SEFindWindowController

@@ -16,14 +16,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     var currentFindWindowController: SEFindWindowController?
     
-    func applicationDidFinishLaunching(_ aNotification: Notification) {
-        // Insert code here to initialize your application
-    }
-
-    func applicationWillTerminate(_ aNotification: Notification) {
-        // Insert code here to tear down your application
-    }
-    
     @IBAction func seSave(sender: NSMenuItem) {
         currentEditor?.save()
     }
@@ -40,6 +32,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         if currentFindWindowController == nil {
             currentFindWindowController = SEFindWindowController.loadFromNib()
         }
+        currentFindWindowController?.currentEditor = currentEditor
         currentFindWindowController?.showWindow(self)
     }
     
