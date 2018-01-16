@@ -3,6 +3,7 @@
     <dependencies>
         <deployment identifier="macosx"/>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="13771"/>
+        <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -220,23 +221,31 @@
                                                                     <rect key="frame" x="1" y="1" width="192" height="17"/>
                                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                     <subviews>
-                                                                        <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="4rY-04-HjF">
-                                                                            <rect key="frame" x="0.0" y="0.0" width="192" height="17"/>
-                                                                            <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Table View Cell" id="8XP-6h-Pn4">
+                                                                        <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="PBc-en-oin">
+                                                                            <rect key="frame" x="3" y="0.0" width="17" height="17"/>
+                                                                            <constraints>
+                                                                                <constraint firstAttribute="width" secondItem="PBc-en-oin" secondAttribute="height" multiplier="1:1" id="XfP-o2-HQc"/>
+                                                                            </constraints>
+                                                                            <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" id="Cgh-pm-ch0"/>
+                                                                        </imageView>
+                                                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="4zt-8S-Z8I">
+                                                                            <rect key="frame" x="26" y="0.0" width="168" height="17"/>
+                                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Label" id="kkk-ny-TYk">
                                                                                 <font key="font" metaFont="system"/>
-                                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                             </textFieldCell>
                                                                         </textField>
                                                                     </subviews>
                                                                     <constraints>
-                                                                        <constraint firstItem="4rY-04-HjF" firstAttribute="top" secondItem="Spj-rA-Cxq" secondAttribute="top" id="1yh-Mu-a3P"/>
-                                                                        <constraint firstAttribute="trailing" secondItem="4rY-04-HjF" secondAttribute="trailing" constant="2" id="8b5-kp-f06"/>
-                                                                        <constraint firstItem="4rY-04-HjF" firstAttribute="leading" secondItem="Spj-rA-Cxq" secondAttribute="leading" constant="2" id="M3g-4f-v7X"/>
+                                                                        <constraint firstItem="4zt-8S-Z8I" firstAttribute="top" secondItem="Spj-rA-Cxq" secondAttribute="top" id="2w4-vA-N2d"/>
+                                                                        <constraint firstAttribute="trailing" secondItem="4zt-8S-Z8I" secondAttribute="trailing" id="7VB-sp-iL6"/>
+                                                                        <constraint firstItem="4zt-8S-Z8I" firstAttribute="leading" secondItem="PBc-en-oin" secondAttribute="trailing" constant="8" id="KdD-QV-wic"/>
+                                                                        <constraint firstItem="PBc-en-oin" firstAttribute="leading" secondItem="Spj-rA-Cxq" secondAttribute="leading" constant="3" id="Mas-vh-HHH"/>
+                                                                        <constraint firstAttribute="bottom" secondItem="PBc-en-oin" secondAttribute="bottom" id="RwO-TW-eS5"/>
+                                                                        <constraint firstAttribute="bottom" secondItem="4zt-8S-Z8I" secondAttribute="bottom" id="Zt0-tn-CeQ"/>
+                                                                        <constraint firstItem="PBc-en-oin" firstAttribute="top" secondItem="Spj-rA-Cxq" secondAttribute="top" id="snR-qW-ymg"/>
                                                                     </constraints>
-                                                                    <connections>
-                                                                        <outlet property="textField" destination="4rY-04-HjF" id="s5N-Wj-vYS"/>
-                                                                    </connections>
                                                                 </tableCellView>
                                                             </prototypeCellViews>
                                                         </tableColumn>

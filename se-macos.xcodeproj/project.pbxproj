@@ -15,6 +15,9 @@
 		0724AC401EAA7C5200E7CFBB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0724AC3F1EAA7C5200E7CFBB /* Assets.xcassets */; };
 		0724AC431EAA7C5200E7CFBB /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0724AC411EAA7C5200E7CFBB /* Main.storyboard */; };
 		074EB2341F3FFD1500F055E3 /* SEWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 074EB2331F3FFD1500F055E3 /* SEWindowController.swift */; };
+		07673068200E8D7A0090FF17 /* SETreeViewResizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07673065200E8D7A0090FF17 /* SETreeViewResizer.swift */; };
+		07673069200E8D7A0090FF17 /* SETreeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07673066200E8D7A0090FF17 /* SETreeView.swift */; };
+		0767306A200E8D7A0090FF17 /* TreeViewDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07673067200E8D7A0090FF17 /* TreeViewDelegate.swift */; };
 		07805D3B1F4FA80E00D5A42E /* Find.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 07805D3A1F4FA80E00D5A42E /* Find.storyboard */; };
 		07805D3E1F4FB2D400D5A42E /* SEFindWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07805D3D1F4FB2D400D5A42E /* SEFindWindowController.swift */; };
 		07805D401F4FB95A00D5A42E /* SEFindViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07805D3F1F4FB95A00D5A42E /* SEFindViewController.swift */; };
@@ -50,6 +53,9 @@
 		0724AC441EAA7C5200E7CFBB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0724AC4A1EAA7DF500E7CFBB /* se-macos-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "se-macos-Bridging-Header.h"; sourceTree = "<group>"; };
 		074EB2331F3FFD1500F055E3 /* SEWindowController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SEWindowController.swift; sourceTree = "<group>"; };
+		07673065200E8D7A0090FF17 /* SETreeViewResizer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SETreeViewResizer.swift; sourceTree = "<group>"; };
+		07673066200E8D7A0090FF17 /* SETreeView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SETreeView.swift; sourceTree = "<group>"; };
+		07673067200E8D7A0090FF17 /* TreeViewDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TreeViewDelegate.swift; sourceTree = "<group>"; };
 		07805D3A1F4FA80E00D5A42E /* Find.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Find.storyboard; sourceTree = "<group>"; };
 		07805D3D1F4FB2D400D5A42E /* SEFindWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SEFindWindowController.swift; sourceTree = "<group>"; };
 		07805D3F1F4FB95A00D5A42E /* SEFindViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SEFindViewController.swift; sourceTree = "<group>"; };
@@ -96,6 +102,7 @@
 			children = (
 				0724AC3B1EAA7C5200E7CFBB /* AppDelegate.swift */,
 				074EB2331F3FFD1500F055E3 /* SEWindowController.swift */,
+				07673064200E8D7A0090FF17 /* Tree */,
 				07D4EE971F53C364002A9CFE /* Command Pane */,
 				07805D3C1F4FB21300D5A42E /* Find */,
 				07805D411F5063C200D5A42E /* Buffer */,
@@ -106,6 +113,16 @@
 				0724AC4A1EAA7DF500E7CFBB /* se-macos-Bridging-Header.h */,
 			);
 			path = "se-macos";
+			sourceTree = "<group>";
+		};
+		07673064200E8D7A0090FF17 /* Tree */ = {
+			isa = PBXGroup;
+			children = (
+				07673065200E8D7A0090FF17 /* SETreeViewResizer.swift */,
+				07673066200E8D7A0090FF17 /* SETreeView.swift */,
+				07673067200E8D7A0090FF17 /* TreeViewDelegate.swift */,
+			);
+			path = Tree;
 			sourceTree = "<group>";
 		};
 		07805D3C1F4FB21300D5A42E /* Find */ = {
@@ -230,9 +247,12 @@
 				0719ABA91F54DE33006A8457 /* SEBufferViewControllerBase.swift in Sources */,
 				07805D441F506D5300D5A42E /* SEGutterView.swift in Sources */,
 				070760431F54547000D6FB9B /* SECommandPaneViewController.swift in Sources */,
+				0767306A200E8D7A0090FF17 /* TreeViewDelegate.swift in Sources */,
 				07B042901F4B7633002EEFD2 /* SEBufferViewController.swift in Sources */,
 				0724AC3C1EAA7C5200E7CFBB /* AppDelegate.swift in Sources */,
+				07673068200E8D7A0090FF17 /* SETreeViewResizer.swift in Sources */,
 				07805D401F4FB95A00D5A42E /* SEFindViewController.swift in Sources */,
+				07673069200E8D7A0090FF17 /* SETreeView.swift in Sources */,
 				07D4EE991F544E6E002A9CFE /* SECommandPaneSegue.swift in Sources */,
 				07805D3E1F4FB2D400D5A42E /* SEFindWindowController.swift in Sources */,
 				071C15061F4B187E006166FB /* SEEditorView.swift in Sources */,
