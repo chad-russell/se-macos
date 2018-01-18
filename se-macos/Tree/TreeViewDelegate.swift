@@ -8,9 +8,15 @@
 
 import Cocoa
 
-struct OutlineItem {
+class OutlineItem {
     let name: URL
     let children: [OutlineItem]
+    var expanded: Bool = false
+    
+    init(name: URL, children: [OutlineItem]) {
+        self.name = name
+        self.children = children
+    }
 }
 
 extension SEBufferViewController: NSOutlineViewDelegate, NSOutlineViewDataSource {
@@ -40,19 +46,48 @@ extension SEBufferViewController: NSOutlineViewDelegate, NSOutlineViewDataSource
     }
     
     func outlineView(_ outlineView: NSOutlineView, viewFor tableColumn: NSTableColumn?, item: Any) -> NSView? {
-        var view: NSTableCellView?
+        var view: SETreeViewCell?
+        
         if let item = item as? OutlineItem {
-            view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "OutlineItemCell"), owner: self) as? NSTableCellView
-            if let textField = view?.textField {
+            view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "OutlineItemCell"), owner: self) as? SETreeViewCell
+            
+            if let textField = view?.label {
                 textField.stringValue = item.name.lastPathComponent
                 textField.sizeToFit()
             }
+            
+            if let image = view?.image {
+                if item.children.isEmpty {
+                    image.image = NSImage(named: NSImage.Name("file-plain"))
+                } else {
+                    if item.expanded {
+                        image.image = NSImage(named: NSImage.Name("folder-open"))
+                    } else {
+                        image.image = NSImage(named: NSImage.Name("folder-closed"))
+                    }
+                }
+            }
         }
+        
         return view
     }
     
     func outlineView(_ outlineView: NSOutlineView, shouldSelectItem item: Any) -> Bool {
         return true
+    }
+    
+    func outlineViewItemWillExpand(_ notification: Notification) {
+        if let item = notification.userInfo!["NSObject"] as? OutlineItem {
+            item.expanded = true
+            self.outlineView.reloadItem(item)
+        }
+    }
+
+    func outlineViewItemWillCollapse(_ notification: Notification) {
+        if let item = notification.userInfo!["NSObject"] as? OutlineItem {
+            item.expanded = false
+            self.outlineView.reloadItem(item)
+        }
     }
     
     func outlineViewSelectionDidChange(_ notification: Notification) {

@@ -27,35 +27,21 @@ class SEBufferViewController: SEBufferViewControllerBase {
     @IBOutlet weak var treeViewWidth: NSLayoutConstraint!
     @IBOutlet weak var treeViewMinWidth: NSLayoutConstraint!
     @IBOutlet weak var treeViewResizer: SETreeViewResizer!
+    @IBOutlet weak var treeViewResizerWidth: NSLayoutConstraint!
     @IBOutlet weak var outlineView: NSOutlineView!
+    
+    @IBOutlet weak var commandView: NSView!
     
     override var lineWidthConstraint: NSLayoutConstraint? { return editorViewWidth }
     
     var commandViewController: SECommandPaneViewController?
     
-    var showingCommandView = false
+    var showingCommandView = true
     var lastMouseDownInsideView = false
     
+    var currentDirectory: URL?
     var outlineItems: [OutlineItem] = []
-    
-    func getFileOutlineItem(url: URL) -> OutlineItem {
-        do {
-            var isDir: ObjCBool = false
-            if FileManager.default.fileExists(atPath: url.path, isDirectory: &isDir) {
-                if isDir.boolValue {
-                    var children: [OutlineItem] = []
-                    for child in try FileManager.default.contentsOfDirectory(atPath: url.path) {
-                        children.append(getFileOutlineItem(url: url.appendingPathComponent(child)))
-                    }
-                    return OutlineItem(name: url, children: children)
-                }
-            }
-        } catch {
-            print("error: \(error)")
-        }
-        
-        return OutlineItem(name: url, children: [])
-    }
+    var flattenedFileOutlineItems: [OutlineItem] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -75,21 +61,69 @@ class SEBufferViewController: SEBufferViewControllerBase {
         
         self.fileExtensionLabel.stringValue = "No File Extension"
         
+        self.treeView.isHidden = true
+        self.treeViewResizer.isHidden = true
+        
         self.treeView.delegate = self
         self.treeView.resizer = treeViewResizer
         self.treeViewResizer.delegate = self.treeView
         
-        outlineItems = [getFileOutlineItem(url: URL(fileURLWithPath: "/Users/chadrussell/Projects/text"))]
-        self.outlineView.reloadData()
+        self.treeViewResizer.wantsLayer = true
+        self.treeViewResizer.layer?.backgroundColor = NSColor.white.cgColor
+        
+        self.treeViewWidth.constant = 0
+        self.treeViewResizerWidth.constant = 0
         
         let synchronizedContentView = editorView.enclosingScrollView!.contentView
         synchronizedContentView.postsBoundsChangedNotifications = true
         NotificationCenter.default.addObserver(self, selector: #selector(synchronizedViewContentBoundsDidChange), name: NSView.boundsDidChangeNotification, object: synchronizedContentView)
+        
+        hideCommandView()
+    }
+    
+    func refreshOutlineItems(_ url: URL) {
+        outlineItems = [getFileOutlineItem(url: url)]
+        
+        flattenedFileOutlineItems = []
+        for item in outlineItems {
+            addFlattenedFileOutlineItems(item)
+        }
+        
+        self.outlineView.reloadData()
+    }
+    
+    func addFlattenedFileOutlineItems(_ item: OutlineItem) {
+        if item.children.isEmpty {
+            flattenedFileOutlineItems.append(item)
+        } else {
+            for child in item.children {
+                addFlattenedFileOutlineItems(child)
+            }
+        }
     }
     
     override func viewWillDisappear() {
         NotificationCenter.default.removeObserver(self)
         editor_buffer_destroy(buf!)
+    }
+    
+    func getFileOutlineItem(url: URL) -> OutlineItem {
+        do {
+            var isDir: ObjCBool = false
+            if FileManager.default.fileExists(atPath: url.path, isDirectory: &isDir) {
+                if isDir.boolValue {
+                    var children: [OutlineItem] = []
+                    for child in try FileManager.default.contentsOfDirectory(atPath: url.path) {
+                        children.append(getFileOutlineItem(url: url.appendingPathComponent(child)))
+                    }
+                    return OutlineItem(name: url, children: children)
+                }
+            }
+        } catch {
+            print("error: \(error)")
+        }
+        
+        return OutlineItem(name: url, children: [])
     }
     
     @objc
@@ -139,18 +173,30 @@ class SEBufferViewController: SEBufferViewControllerBase {
         if !showingCommandView { return }
         
         showingCommandView = false
+        self.commandView.isHidden = true
         self.editorView.showCursor = true
         self.editorView.needsDisplay = true
-        self.commandViewController!.dismissViewController(self.commandViewController!)
     }
     
     func showCommandView() {
         if showingCommandView { return }
         
         showingCommandView = true
+        
+        // clear all text
+        // @TODO(chad): clean this up a LOT
+        if let vcBuf = self.commandViewController?.buf {
+            editor_buffer_set_cursor_pos(vcBuf, 0)
+            let chars = editor_buffer_get_char_count(vcBuf)
+            editor_buffer_set_cursor_is_selection(vcBuf, 1)
+            editor_buffer_set_cursor_pos(vcBuf, chars)
+            editor_buffer_delete(vcBuf)
+        }
+        
+        self.commandViewController?.reload()
+        self.commandView.isHidden = false
         self.editorView.showCursor = false
         self.editorView.needsDisplay = true
-        self.performSegue(withIdentifier: NSStoryboardSegue.Identifier("commandPanel"), sender: self)
     }
     
     func toggleCommandView() {
@@ -165,29 +211,7 @@ class SEBufferViewController: SEBufferViewControllerBase {
             return
         } else if event.keyCode == 40 && event.modifierFlags.contains(.command) {
             // cmd + k
-            let isHiding = !self.treeView.isHidden
-            if !isHiding {
-                self.treeView.isHidden = false
-                self.treeViewResizer.isHidden = false
-            } else {
-                self.treeViewMinWidth.constant = 0
-            }
-            
-            let defaultExpandedWidth: CGFloat = 200
-            
-            NSAnimationContext.runAnimationGroup({_ in
-                NSAnimationContext.current.duration = 0.1
-                NSAnimationContext.current.timingFunction =
-                    CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseOut)
-                self.treeViewWidth.animator().constant = isHiding ? 0 : defaultExpandedWidth
-            }, completionHandler: {
-                if isHiding {
-                    self.treeView.isHidden = true
-                    self.treeViewResizer.isHidden = true
-                } else {
-                    self.treeViewMinWidth.constant = defaultExpandedWidth
-                }
-            })
+            toggleTreeView()
             return
         }
         
@@ -197,6 +221,33 @@ class SEBufferViewController: SEBufferViewControllerBase {
         }
         
         super.handleKeyDown(with: event)
+    }
+    
+    func toggleTreeView() {
+        let isHiding = !self.treeView.isHidden
+        if !isHiding {
+            self.treeView.isHidden = false
+            self.treeViewResizer.isHidden = false
+        } else {
+            self.treeViewMinWidth.constant = 0
+        }
+        
+        let defaultExpandedWidth: CGFloat = 200
+        
+        NSAnimationContext.runAnimationGroup({_ in
+            NSAnimationContext.current.duration = 0.1
+            NSAnimationContext.current.timingFunction =
+                CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseOut)
+            self.treeViewWidth.animator().constant = isHiding ? 0 : defaultExpandedWidth
+            self.treeViewResizerWidth.constant = isHiding ? 0 : 5
+        }, completionHandler: {
+            if isHiding {
+                self.treeView.isHidden = true
+                self.treeViewResizer.isHidden = true
+            } else {
+                self.treeViewMinWidth.constant = defaultExpandedWidth
+            }
+        })
     }
     
     override func increaseFontSize() {
@@ -231,14 +282,6 @@ class SEBufferViewController: SEBufferViewControllerBase {
         }
 
         self.gutterView.needsDisplay = true
-        if showingCommandView {
-            let height = preferences.charHeight + 12
-            if commandViewController?.paneHeight.constant != height {
-                commandViewController?.paneHeight.constant = height
-            }
-            self.commandViewController?.reload()
-            self.commandViewController?.tableView.reloadData()
-        }
 
         // update gutter view dimensions
         if let gutterView = self.gutterView {
@@ -310,22 +353,26 @@ class SEBufferViewController: SEBufferViewControllerBase {
         if dialog.runModal() == NSApplication.ModalResponse.OK {
             guard let result = dialog.url else { return }
             
-            outlineItems = [getFileOutlineItem(url: result)]
-            self.outlineView.reloadData()
+            self.currentDirectory = result
+            refreshOutlineItems(result)
             
             var isDirectory: ObjCBool = false
             if FileManager.default.fileExists(atPath: result.path, isDirectory: &isDirectory) {
                 if !isDirectory.boolValue {
-                    self.view.window?.title = result.lastPathComponent
-                    self.fileExtensionLabel.stringValue = ".\(result.pathExtension)"
-                    
-                    DispatchQueue.global(qos: .userInteractive).async {
-                        editor_buffer_open_file(self.buf!, UInt32(self.preferences.virtualNewlineLength), result.path)
-                        DispatchQueue.main.async {
-                            self.reload()
-                        }
-                    }
+                    openFile(withURL: result)
                 }
+            }
+        }
+    }
+    
+    func openFile(withURL url: URL) {
+        self.view.window?.title = url.lastPathComponent
+        self.fileExtensionLabel.stringValue = ".\(url.pathExtension)"
+        
+        DispatchQueue.global(qos: .userInteractive).async {
+            editor_buffer_open_file(self.buf!, UInt32(self.preferences.virtualNewlineLength), url.path)
+            DispatchQueue.main.async {
+                self.reload()
             }
         }
     }
@@ -406,6 +453,13 @@ class SEBufferViewController: SEBufferViewControllerBase {
             drawLastLine()
             reload()
         }
+    }
+    
+    override func prepare(for segue: NSStoryboardSegue, sender: Any?) {
+        if segue.identifier?.rawValue != "commandPanel" { return }
+        
+        guard let dc = segue.destinationController as? SECommandPaneViewController else { return }
+        dc.bufferVC = self
     }
     
 }

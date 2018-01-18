@@ -335,16 +335,4 @@ class SEEditorView: NSView {
         
         self.needsDisplay = true
     }
-    
-//    override func mouseUp(with event: NSEvent) {
-//        guard let delegate = delegate else { return }
-//
-//        for i in 0..<editor_buffer_get_cursor_count(delegate.buf!) {
-//            let cursorPos = editor_buffer_get_cursor_pos(delegate.buf!, i)
-//            let selectionPos = editor_buffer_get_cursor_selection_start_pos(delegate.buf!, i)
-//            if cursorPos == selectionPos {
-//                editor_buffer_set_cursor_is_selection_for_cursor_index(delegate.buf!, i, 0)
-//            }
-//        }
-//    }
 }

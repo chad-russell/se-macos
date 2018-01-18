@@ -23,6 +23,10 @@ class SEWindowController: NSWindowController {
         windowController.window?.makeKey()
     }
     
+    override func windowDidLoad() {
+        self.window?.makeFirstResponder(self)
+    }
+    
     override func keyDown(with event: NSEvent) {
         if let vc = self.contentViewController as? SEBufferViewController {
             vc.handleKeyDown(with: event)
@@ -30,6 +34,8 @@ class SEWindowController: NSWindowController {
     }
     
     override func mouseDown(with event: NSEvent) {
+        self.window?.makeFirstResponder(self)
+        
         if let vc = self.contentViewController as? SEBufferViewController {
             vc.handleMouseDown(with: event)
         }

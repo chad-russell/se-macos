@@ -18,6 +18,10 @@
 		07673068200E8D7A0090FF17 /* SETreeViewResizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07673065200E8D7A0090FF17 /* SETreeViewResizer.swift */; };
 		07673069200E8D7A0090FF17 /* SETreeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07673066200E8D7A0090FF17 /* SETreeView.swift */; };
 		0767306A200E8D7A0090FF17 /* TreeViewDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07673067200E8D7A0090FF17 /* TreeViewDelegate.swift */; };
+		0767306C200E8DB90090FF17 /* SETreeViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0767306B200E8DB90090FF17 /* SETreeViewCell.swift */; };
+		0767306E200EC1EA0090FF17 /* SEWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0767306D200EC1EA0090FF17 /* SEWindow.swift */; };
+		07673070200EDBF80090FF17 /* SEOutlineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0767306F200EDBF80090FF17 /* SEOutlineView.swift */; };
+		07673072200FF6E50090FF17 /* SEFindTableCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07673071200FF6E50090FF17 /* SEFindTableCellView.swift */; };
 		07805D3B1F4FA80E00D5A42E /* Find.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 07805D3A1F4FA80E00D5A42E /* Find.storyboard */; };
 		07805D3E1F4FB2D400D5A42E /* SEFindWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07805D3D1F4FB2D400D5A42E /* SEFindWindowController.swift */; };
 		07805D401F4FB95A00D5A42E /* SEFindViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07805D3F1F4FB95A00D5A42E /* SEFindViewController.swift */; };
@@ -26,7 +30,6 @@
 		07B042901F4B7633002EEFD2 /* SEBufferViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07B0428F1F4B7633002EEFD2 /* SEBufferViewController.swift */; };
 		07D4EE921F5356D2002A9CFE /* SEBufferDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07D4EE911F5356D2002A9CFE /* SEBufferDelegate.swift */; };
 		07D4EE961F53C34C002A9CFE /* SECommandPaneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07D4EE951F53C34C002A9CFE /* SECommandPaneView.swift */; };
-		07D4EE991F544E6E002A9CFE /* SECommandPaneSegue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07D4EE981F544E6E002A9CFE /* SECommandPaneSegue.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
@@ -56,6 +59,10 @@
 		07673065200E8D7A0090FF17 /* SETreeViewResizer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SETreeViewResizer.swift; sourceTree = "<group>"; };
 		07673066200E8D7A0090FF17 /* SETreeView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SETreeView.swift; sourceTree = "<group>"; };
 		07673067200E8D7A0090FF17 /* TreeViewDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TreeViewDelegate.swift; sourceTree = "<group>"; };
+		0767306B200E8DB90090FF17 /* SETreeViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SETreeViewCell.swift; sourceTree = "<group>"; };
+		0767306D200EC1EA0090FF17 /* SEWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SEWindow.swift; sourceTree = "<group>"; };
+		0767306F200EDBF80090FF17 /* SEOutlineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SEOutlineView.swift; sourceTree = "<group>"; };
+		07673071200FF6E50090FF17 /* SEFindTableCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SEFindTableCellView.swift; sourceTree = "<group>"; };
 		07805D3A1F4FA80E00D5A42E /* Find.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Find.storyboard; sourceTree = "<group>"; };
 		07805D3D1F4FB2D400D5A42E /* SEFindWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SEFindWindowController.swift; sourceTree = "<group>"; };
 		07805D3F1F4FB95A00D5A42E /* SEFindViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SEFindViewController.swift; sourceTree = "<group>"; };
@@ -65,7 +72,6 @@
 		07B0428F1F4B7633002EEFD2 /* SEBufferViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SEBufferViewController.swift; sourceTree = "<group>"; };
 		07D4EE911F5356D2002A9CFE /* SEBufferDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SEBufferDelegate.swift; sourceTree = "<group>"; };
 		07D4EE951F53C34C002A9CFE /* SECommandPaneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SECommandPaneView.swift; sourceTree = "<group>"; };
-		07D4EE981F544E6E002A9CFE /* SECommandPaneSegue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SECommandPaneSegue.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -102,6 +108,7 @@
 			children = (
 				0724AC3B1EAA7C5200E7CFBB /* AppDelegate.swift */,
 				074EB2331F3FFD1500F055E3 /* SEWindowController.swift */,
+				0767306D200EC1EA0090FF17 /* SEWindow.swift */,
 				07673064200E8D7A0090FF17 /* Tree */,
 				07D4EE971F53C364002A9CFE /* Command Pane */,
 				07805D3C1F4FB21300D5A42E /* Find */,
@@ -119,8 +126,10 @@
 			isa = PBXGroup;
 			children = (
 				07673065200E8D7A0090FF17 /* SETreeViewResizer.swift */,
+				0767306F200EDBF80090FF17 /* SEOutlineView.swift */,
 				07673066200E8D7A0090FF17 /* SETreeView.swift */,
 				07673067200E8D7A0090FF17 /* TreeViewDelegate.swift */,
+				0767306B200E8DB90090FF17 /* SETreeViewCell.swift */,
 			);
 			path = Tree;
 			sourceTree = "<group>";
@@ -160,8 +169,8 @@
 			isa = PBXGroup;
 			children = (
 				070760421F54547000D6FB9B /* SECommandPaneViewController.swift */,
+				07673071200FF6E50090FF17 /* SEFindTableCellView.swift */,
 				07D4EE951F53C34C002A9CFE /* SECommandPaneView.swift */,
-				07D4EE981F544E6E002A9CFE /* SECommandPaneSegue.swift */,
 			);
 			path = "Command Pane";
 			sourceTree = "<group>";
@@ -245,15 +254,18 @@
 				07D4EE961F53C34C002A9CFE /* SECommandPaneView.swift in Sources */,
 				074EB2341F3FFD1500F055E3 /* SEWindowController.swift in Sources */,
 				0719ABA91F54DE33006A8457 /* SEBufferViewControllerBase.swift in Sources */,
+				0767306E200EC1EA0090FF17 /* SEWindow.swift in Sources */,
 				07805D441F506D5300D5A42E /* SEGutterView.swift in Sources */,
 				070760431F54547000D6FB9B /* SECommandPaneViewController.swift in Sources */,
+				0767306C200E8DB90090FF17 /* SETreeViewCell.swift in Sources */,
 				0767306A200E8D7A0090FF17 /* TreeViewDelegate.swift in Sources */,
 				07B042901F4B7633002EEFD2 /* SEBufferViewController.swift in Sources */,
 				0724AC3C1EAA7C5200E7CFBB /* AppDelegate.swift in Sources */,
+				07673072200FF6E50090FF17 /* SEFindTableCellView.swift in Sources */,
 				07673068200E8D7A0090FF17 /* SETreeViewResizer.swift in Sources */,
 				07805D401F4FB95A00D5A42E /* SEFindViewController.swift in Sources */,
+				07673070200EDBF80090FF17 /* SEOutlineView.swift in Sources */,
 				07673069200E8D7A0090FF17 /* SETreeView.swift in Sources */,
-				07D4EE991F544E6E002A9CFE /* SECommandPaneSegue.swift in Sources */,
 				07805D3E1F4FB2D400D5A42E /* SEFindWindowController.swift in Sources */,
 				071C15061F4B187E006166FB /* SEEditorView.swift in Sources */,
 			);
@@ -384,6 +396,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				COMBINE_HIDPI_IMAGES = YES;
+				EMBED_ASSET_PACKS_IN_PRODUCT_BUNDLE = NO;
 				HEADER_SEARCH_PATHS = (
 					/usr/local/include,
 					/Users/chadrussell/Projects/Clion/se,
@@ -409,6 +422,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				COMBINE_HIDPI_IMAGES = YES;
+				EMBED_ASSET_PACKS_IN_PRODUCT_BUNDLE = NO;
 				HEADER_SEARCH_PATHS = (
 					/usr/local/include,
 					/Users/chadrussell/Projects/Clion/se,

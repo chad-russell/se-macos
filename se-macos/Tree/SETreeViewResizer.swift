@@ -27,7 +27,9 @@ class SETreeViewResizer: NSView {
     }
     
     override func mouseEntered(with event: NSEvent) {
-        NSCursor.resizeLeftRight.set()
+        if !dragging {
+            NSCursor.resizeLeftRight.set()
+        }
     }
     
     override func mouseExited(with event: NSEvent) {
@@ -41,18 +43,39 @@ class SETreeViewResizer: NSView {
         if let constant = delegate?.delegate?.treeViewWidth.constant {
             delegate?.mouseDownWidth = constant
         }
+        
+        NSApplication.shared.keyWindow?.disableCursorRects()
     }
     
     override func mouseDragged(with event: NSEvent) {
         dragging = true
         if let delegate = delegate {
+            if let d = delegate.delegate, d.treeViewWidth.constant <= d.treeViewMinWidth.constant {
+                NSCursor.resizeRight.set()
+            } else {
+                NSCursor.resizeLeftRight.set()
+            }
             delegate.delegate?.treeViewWidth.constant = delegate.mouseDownWidth + event.locationInWindow.x - delegate.mouseDownX
         }
     }
     
     override func mouseUp(with event: NSEvent) {
         dragging = false
-        NSCursor.arrow.set()
+        
+        if let delegate = delegate?.delegate, delegate.treeViewWidth.constant < delegate.treeViewMinWidth.constant {
+            delegate.treeViewWidth.constant = delegate.treeViewMinWidth.constant
+        }
+        
+        NSApplication.shared.keyWindow?.enableCursorRects()
+        
+        let locationInSelf = self.convert(event.locationInWindow, from: nil)
+        if !self.bounds.contains(locationInSelf) {
+            NSCursor.arrow.set()
+        } else if let d = delegate?.delegate, d.treeViewWidth.constant <= d.treeViewMinWidth.constant {
+            NSCursor.resizeRight.set()
+        } else {
+            NSCursor.resizeLeftRight.set()
+        }
     }
     
     func setupTrackingArea() {

@@ -21,6 +21,7 @@ enum vim {
     case paragraph
     case previousParagraph
     case endOfWord
+    case endOfBigWord
     case endOfLine
     case startOfLine
     case firstNonSpaceCharacterOfLine
@@ -72,6 +73,7 @@ extension vim: Equatable {
         case (.down, .down): return true
         case (.word, .word): return true
         case (.bigWord, .bigWord): return true
+        case (.endOfBigWord, .endOfBigWord): return true
         case (.previousWord, .previousWord): return true
         case (.previousBigWord, .previousBigWord): return true
         case (.paragraph, .paragraph): return true
@@ -564,6 +566,11 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
             }
         } else if event.keyCode == 14 {
             // e
+            if event.modifierFlags.contains(.shift) {
+                vimStack.append(.endOfBigWord)
+            } else {
+                vimStack.append(.endOfWord)
+            }
             vimStack.append(.endOfWord)
         } else if event.keyCode == 11 {
             // b
@@ -1023,6 +1030,8 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
                                                                          preferences.virtualNewlineLength);
         case .endOfWord:
             editor_buffer_set_cursor_point_to_end_of_current_word(buf!, preferences.wordSeparators)
+        case .endOfBigWord:
+            editor_buffer_set_cursor_point_to_end_of_current_word(buf!, preferences.bigWordSeparators)
         case .endOfLine:
             if preferences.virtualNewlines {
                 editor_buffer_set_cursor_point_to_end_of_line_virtual(buf!, preferences.virtualNewlineLength)
@@ -1109,6 +1118,22 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
                 editor_buffer_set_cursor_is_selection(buf!, 1)
                 
                 if !interpretVimAtIndex(index + 1) { return false }
+                
+                switch vimStack[index + 1] {
+                case .down:
+                    extendSelectionToLines()
+                case .up:
+                    extendSelectionToLines()
+                case .repeatCount(_):
+                    switch vimStack[index + 2] {
+                    case .down:
+                        extendSelectionToLines()
+                    case .up:
+                        extendSelectionToLines()
+                    default: break
+                    }
+                default: break
+                }
             }
             
             copySelection()
@@ -1126,6 +1151,23 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
                 editor_buffer_set_cursor_is_selection(buf!, 1)
                 
                 if !interpretVimAtIndex(index + 1) { return false }
+                
+                switch vimStack[index + 1] {
+                case .down:
+                    extendSelectionToLines()
+                case .up:
+                    extendSelectionToLines()
+                case .repeatCount(_):
+                    switch vimStack[index + 2] {
+                    case .down:
+                        extendSelectionToLines()
+                    case .up:
+                        extendSelectionToLines()
+                    default: break
+                    }
+                default: break
+                }
+                
                 copySelection()
                 editor_buffer_delete(buf!)
                 
@@ -1204,6 +1246,11 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
                 editor_buffer_set_cursor_point_to_start_of_previous_word(buf!, preferences.wordSeparators)
                 editor_buffer_set_cursor_is_selection(buf!, 1)
                 editor_buffer_set_cursor_point_to_end_of_current_word(buf!, preferences.wordSeparators)
+            case .endOfBigWord:
+                editor_buffer_set_cursor_is_selection(buf!, 0)
+                editor_buffer_set_cursor_point_to_start_of_previous_word(buf!, preferences.bigWordSeparators)
+                editor_buffer_set_cursor_is_selection(buf!, 1)
+                editor_buffer_set_cursor_point_to_end_of_current_word(buf!, preferences.bigWordSeparators)
             case .rawChars(chars: "p"):
                 editor_buffer_set_cursor_is_selection(buf!, 0)
                 editor_buffer_set_cursor_point_to_start_of_current_paragraph(buf!, preferences.virtualNewlines ? 1 : 0, preferences.virtualNewlineLength)
@@ -1251,6 +1298,11 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
                 editor_buffer_set_cursor_point_to_start_of_previous_word(buf!, preferences.wordSeparators)
                 editor_buffer_set_cursor_is_selection(buf!, 1)
                 editor_buffer_set_cursor_point_to_end_of_current_word(buf!, preferences.wordSeparators)
+            case .endOfBigWord:
+                editor_buffer_set_cursor_is_selection(buf!, 0)
+                editor_buffer_set_cursor_point_to_start_of_previous_word(buf!, preferences.bigWordSeparators)
+                editor_buffer_set_cursor_is_selection(buf!, 1)
+                editor_buffer_set_cursor_point_to_end_of_current_word(buf!, preferences.bigWordSeparators)
             case .rawChars(chars: "p"):
                 editor_buffer_set_cursor_is_selection(buf!, 0)
                 editor_buffer_set_cursor_point_to_start_of_current_paragraph(buf!, preferences.virtualNewlines ? 1 : 0, preferences.virtualNewlineLength)
@@ -1485,13 +1537,8 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
                 
                 // set cursor to the end of the line
                 if bottomRow >= lastLine {
-                    editor_buffer_set_cursor_pos_relative_for_cursor_index(buf!, i, 1)
-                    
-                    if preferences.virtualNewlines {
-                        editor_buffer_set_cursor_point_to_end_of_line_virtual_for_cursor_index(buf!, i, preferences.virtualNewlineLength)
-                    } else {
-                        editor_buffer_set_cursor_point_to_end_of_line_for_cursor_index(buf!, i)
-                    }
+                    editor_buffer_set_cursor_point_for_cursor_index(buf!, i, bottomRow, 0)
+                    editor_buffer_set_cursor_point_to_end_of_line_for_cursor_index(buf!, i)
                 } else {
                     editor_buffer_set_cursor_point_for_cursor_index(buf!, i, bottomRow + 1, 0)
                 }
@@ -1628,7 +1675,6 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
             if let bigWordSeparators = json!["big_word_separators"] as? String {
                 preferences.bigWordSeparators = bigWordSeparators
             }
-            
         }
         
         reload()
@@ -1670,8 +1716,6 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
         dragTimer?.invalidate()
         dragTimer = nil
         dragEvent = nil
-        
-        self.editorView.mouseUp(with: theEvent)
     }
     
     func increaseFontSize() {
