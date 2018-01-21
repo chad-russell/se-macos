@@ -87,4 +87,6 @@ protocol SEBufferDelegate {
     var mode: SEMode { get set }
     var buf: editor_buffer_t? { get set }
     var lineWidthConstraint: NSLayoutConstraint? { get }
+    
+    func scrollToCursor()
 }

@@ -340,6 +340,9 @@ class SEBufferViewController: SEBufferViewControllerBase {
             }
         }
 
+        self.editorView.cursorRects = []
+        sort_and_merge_cursors(buf!)
+        
         self.view.layer?.backgroundColor = preferences.editorBackgroundColor.cgColor
         
         updateFooterView()

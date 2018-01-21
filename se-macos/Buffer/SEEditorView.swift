@@ -82,6 +82,8 @@ class SEEditorView: NSView {
         } else if cursorLayerParent.animation(forKey: "opacity") == nil {
             cursorLayerParent.add(cursorAnimation, forKey: "opacity")
         }
+        
+        delegate.scrollToCursor()
     }
     
     func drawLine(line: Int64, scrollToCursor: Bool = false) {

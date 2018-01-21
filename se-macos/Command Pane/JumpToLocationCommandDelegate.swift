@@ -44,6 +44,8 @@ class JumpToLocationCommandDelegate: CommandDelegate {
         
         if let preferences = self.delegate.bufferVC?.preferences,
         let buf = self.delegate.bufferVC?.buf {
+            self.delegate.bufferVC?.editorView.cursorRects = []
+            
             if preferences.virtualNewlines {
                 editor_buffer_set_cursor_point_virtual(buf, line, col, preferences.virtualNewlineLength)
             } else {

@@ -401,7 +401,6 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
             editor_buffer_set_cursor_is_selection(buf!, 0)
         }
         
-        drawLastLine()
         sort_and_merge_cursors(buf!)
     }
     
