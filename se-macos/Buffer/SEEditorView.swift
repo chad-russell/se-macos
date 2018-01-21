@@ -18,6 +18,11 @@ class SEEditorView: NSView {
     var showCursor = true
     var longestLine: CGFloat = 0
     
+    // @note(chad): This is a bit of a hack, but when core text calculates the bounds of a line they ignore trailing spaces.
+    // So if we need to calculate the width of a line *with* trailing spaces, then we have to add a period on the end
+    // and then subtract its width.
+    var widthOfPeriod: CGFloat = 0
+    
     override var isFlipped: Bool { return true }
     
     required init?(coder decoder: NSCoder) {
@@ -109,6 +114,10 @@ class SEEditorView: NSView {
         let attributedString = NSMutableAttributedString(string: swiftString, attributes: stringAttributes)
         let ctLine = CTLineCreateWithAttributedString(attributedString)
         
+        widthOfPeriod = NSString(string: ".")
+            .size(withAttributes: [.font: preferences.editorFont])
+            .width
+        
         if !scrollToCursor {
             CTLineDraw(ctLine, context!)
         }
@@ -172,11 +181,12 @@ class SEEditorView: NSView {
 
                 if cursorRow == line {
                     if cursorRow == cursorSelectionRow {
-                        let startOffset = CTLineGetOffsetForStringIndex(ctLine, CFIndex(realCursorCol), nil)
-                        let endOffset = CTLineGetOffsetForStringIndex(ctLine, CFIndex(cursorSelectionCol), nil)
+                        let startOffset = getOffset(cursorCol: realCursorCol, swiftString: swiftString, stringAttributes: stringAttributes)
+                        let endOffset = getOffset(cursorCol: cursorSelectionCol, swiftString: swiftString, stringAttributes: stringAttributes)
+                        
                         selectionRect = CGRect(x: x + startOffset, y: cursorY - charHeight, width: endOffset - startOffset, height: charHeight)
                     } else if cursorSelectionRow > cursorRow {
-                        let startOffset = CTLineGetOffsetForStringIndex(ctLine, CFIndex(realCursorCol), nil)
+                        let startOffset = getOffset(cursorCol: realCursorCol, swiftString: swiftString, stringAttributes: stringAttributes)
 
                         let lastCol: Int64
                         if preferences.virtualNewlines {
@@ -185,20 +195,23 @@ class SEEditorView: NSView {
                             lastCol = editor_buffer_get_line_length(delegate.buf!, cursorRow)
                         }
 
-                        let endOffset = CTLineGetOffsetForStringIndex(ctLine, CFIndex(lastCol), nil)
+                        let endOffset = getOffset(cursorCol: lastCol, swiftString: swiftString, stringAttributes: stringAttributes)
+                        
                         selectionRect = CGRect(x: x + startOffset, y: cursorY - charHeight, width: endOffset - startOffset, height: charHeight)
                     } else {
-                        let startOffset = CTLineGetOffsetForStringIndex(ctLine, CFIndex(realCursorCol), nil)
-                        let endOffset = CTLineGetOffsetForStringIndex(ctLine, 0, nil)
+                        let startOffset = getOffset(cursorCol: realCursorCol, swiftString: swiftString, stringAttributes: stringAttributes)
+                        let endOffset = getOffset(cursorCol: 0, swiftString: swiftString, stringAttributes: stringAttributes)
+                        
                         selectionRect = CGRect(x: x + startOffset, y: cursorY - charHeight, width: endOffset - startOffset, height: charHeight)
                     }
                 } else if cursorSelectionRow == line {
                     if cursorSelectionRow > cursorRow {
-                        let startOffset = CTLineGetOffsetForStringIndex(ctLine, CFIndex(cursorSelectionCol), nil)
-                        let endOffset = CTLineGetOffsetForStringIndex(ctLine, 0, nil)
+                        let startOffset = getOffset(cursorCol: cursorSelectionCol, swiftString: swiftString, stringAttributes: stringAttributes)
+                        let endOffset = getOffset(cursorCol: 0, swiftString: swiftString, stringAttributes: stringAttributes)
+                        
                         selectionRect = CGRect(x: x + startOffset, y: cursorY - charHeight, width: endOffset - startOffset, height: charHeight)
                     } else {
-                        let startOffset = CTLineGetOffsetForStringIndex(ctLine, CFIndex(cursorSelectionCol), nil)
+                        let startOffset = getOffset(cursorCol: cursorSelectionCol, swiftString: swiftString, stringAttributes: stringAttributes)
 
                         let lastCol: Int64
                         if preferences.virtualNewlines {
@@ -207,11 +220,12 @@ class SEEditorView: NSView {
                             lastCol = editor_buffer_get_line_length(delegate.buf!, cursorSelectionRow)
                         }
 
-                        let endOffset = CTLineGetOffsetForStringIndex(ctLine, CFIndex(lastCol), nil)
+                        let endOffset = getOffset(cursorCol: lastCol, swiftString: swiftString, stringAttributes: stringAttributes)
+                        
                         selectionRect = CGRect(x: x + startOffset, y: cursorY - charHeight, width: endOffset - startOffset, height: charHeight)
                     }
                 } else if (cursorRow < line && cursorSelectionRow > line) || (cursorRow > line && cursorSelectionRow < line) {
-                    let startOffset = CTLineGetOffsetForStringIndex(ctLine, 0, nil)
+                    let startOffset = getOffset(cursorCol: 0, swiftString: swiftString, stringAttributes: stringAttributes)
 
                     let lastCol: Int64
                     if preferences.virtualNewlines {
@@ -220,7 +234,8 @@ class SEEditorView: NSView {
                         lastCol = editor_buffer_get_line_length(delegate.buf!, line)
                     }
 
-                    let endOffset = CTLineGetOffsetForStringIndex(ctLine, CFIndex(lastCol), nil)
+                    let endOffset = getOffset(cursorCol: lastCol, swiftString: swiftString, stringAttributes: stringAttributes)
+                    
                     selectionRect = CGRect(x: x + startOffset, y: cursorY - charHeight, width: endOffset - startOffset, height: charHeight)
                 }
 
@@ -235,14 +250,15 @@ class SEEditorView: NSView {
             if cursorRow == line {
                 context?.setFillColor(preferences.cursorColor.cgColor)
                 
-                let startOffset = CTLineGetOffsetForStringIndex(ctLine, CFIndex(cursorCol), nil)
+                let startOffset = getOffset(cursorCol: cursorCol, swiftString: swiftString, stringAttributes: stringAttributes)
+                
                 var width: CGFloat
                 switch delegate.mode {
                 case .insert: width = 1.5
                 case .visual:
                     fallthrough
                 case .normal:
-                    let endOffset = CTLineGetOffsetForStringIndex(ctLine, CFIndex(cursorCol + 1), nil)
+                    let endOffset = getOffset(cursorCol: cursorCol + 1, swiftString: swiftString, stringAttributes: stringAttributes)
                     width = endOffset - startOffset
                     if width == 0 {
                         width = NSString(string: "0").size(withAttributes: [NSAttributedStringKey.font: preferences.editorFont]).width
@@ -266,6 +282,27 @@ class SEEditorView: NSView {
                 cursorLayer.position = CGPoint(x: cursorRect.origin.x + cursorRect.width / 2, y: cursorRect.origin.y + cursorRect.height / 2)
             }
         }
+    }
+    
+    func getOffset(cursorCol: Int64, swiftString: String, stringAttributes: [NSAttributedStringKey : NSObject]) -> CGFloat {
+        let swiftStringCount = swiftString.count
+        var codepointSum = 0
+        var realCursorCol = 0
+        while codepointSum < cursorCol && realCursorCol < swiftStringCount {
+            let startIndex = swiftString.index(swiftString.startIndex, offsetBy: realCursorCol)
+            let endIndex = swiftString.index(swiftString.startIndex, offsetBy: realCursorCol + 1)
+            let swiftCharAt = swiftString[startIndex ..< endIndex]
+            
+            codepointSum += swiftCharAt.unicodeScalars.count
+            realCursorCol += 1
+        }
+        
+        // subscript the string at the real cursor col and get the bounds
+        let endIndex = swiftString.index(swiftString.startIndex, offsetBy: realCursorCol)
+        let substringLine = CTLineCreateWithAttributedString(NSAttributedString(
+            string: String(swiftString[..<endIndex]) + ".", attributes: stringAttributes))
+        
+        return CTLineGetBoundsWithOptions(substringLine, CTLineBoundsOptions.useOpticalBounds).width - widthOfPeriod
     }
     
     func mouseDownHelper(event: NSEvent, drag: Bool = false) {

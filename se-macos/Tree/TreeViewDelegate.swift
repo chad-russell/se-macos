@@ -10,12 +10,30 @@ import Cocoa
 
 class OutlineItem {
     let name: URL
-    let children: [OutlineItem]
     var expanded: Bool = false
     
-    init(name: URL, children: [OutlineItem]) {
+    let index: Int
+    var childCount = 0
+
+    let isDirectory: Bool
+    
+    var attributedString: NSMutableAttributedString
+    
+    // for 'mapping'
+    var foundMatch = false
+    var outScore: Int32 = 0
+    
+    init(name: URL, index: Int, isDirectory: Bool) {
         self.name = name
-        self.children = children
+        self.index = index
+        self.attributedString = NSMutableAttributedString(string: name.lastPathComponent)
+        self.isDirectory = isDirectory
+    }
+}
+
+extension OutlineItem: CustomDebugStringConvertible {
+    var debugDescription: String {
+        return "name: '\(name.lastPathComponent)', childCount: \(childCount)"
     }
 }
 
@@ -23,26 +41,48 @@ extension SEBufferViewController: NSOutlineViewDelegate, NSOutlineViewDataSource
     
     func outlineView(_ outlineView: NSOutlineView, numberOfChildrenOfItem item: Any?) -> Int {
         if let item = item as? OutlineItem {
-            return item.children.count
+            return item.childCount
         }
         
-        return outlineItems.count
+        if !flattenedFileOutlineItems.isEmpty {
+            return 1
+        }
+        
+        return 0
     }
-    
+
     func outlineView(_ outlineView: NSOutlineView, child index: Int, ofItem item: Any?) -> Any {
         if let item = item as? OutlineItem {
-            return item.children[index]
+            var childrenToGo = index + 1
+            var totalSkipAhead = 1
+            
+            while childrenToGo > 0 {
+                childrenToGo -= 1
+                
+                if childrenToGo == 0 {
+                    return flattenedFileOutlineItems[item.index + totalSkipAhead]
+                }
+                
+                childrenToGo += flattenedFileOutlineItems[item.index + totalSkipAhead].childCount
+                totalSkipAhead += 1
+            }
+            
+            assert(false)
         }
         
-        return outlineItems[index]
+        if !flattenedFileOutlineItems.isEmpty {
+            return flattenedFileOutlineItems[0]
+        }
+        
+        assert(false)
     }
     
     func outlineView(_ outlineView: NSOutlineView, isItemExpandable item: Any) -> Bool {
         if let item = item as? OutlineItem {
-            return !item.children.isEmpty
+            return item.isDirectory
         }
-        
-        return false
+    
+        assert(false)
     }
     
     func outlineView(_ outlineView: NSOutlineView, viewFor tableColumn: NSTableColumn?, item: Any) -> NSView? {
@@ -57,7 +97,7 @@ extension SEBufferViewController: NSOutlineViewDelegate, NSOutlineViewDataSource
             }
             
             if let image = view?.image {
-                if item.children.isEmpty {
+                if !item.isDirectory {
                     image.image = NSImage(named: NSImage.Name("file-plain"))
                 } else {
                     if item.expanded {
@@ -92,7 +132,7 @@ extension SEBufferViewController: NSOutlineViewDelegate, NSOutlineViewDataSource
     
     func outlineViewSelectionDidChange(_ notification: Notification) {
         if let item = self.outlineView.item(atRow: self.outlineView.selectedRow) as? OutlineItem {
-            if item.children.isEmpty {
+            if !item.isDirectory {
                 editor_buffer_destroy(self.buf!)
                 self.buf = editor_buffer_create(UInt32(preferences.virtualNewlineLength))
                 

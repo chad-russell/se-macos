@@ -46,7 +46,8 @@ struct SEEditorPreferences {
     var wordSeparators: String = "\n\t`~!@#$%^&*()-_=+[]{},.<>/? "
     var bigWordSeparators: String = "\n\t "
     
-    var commands: [Command] = []
+    var folderExcludePatterns: [String] = []
+    var fileExcludePatterns: [String] = []
 }
 
 enum SEMode {

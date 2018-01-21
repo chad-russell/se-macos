@@ -171,6 +171,10 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
         }
         self.editorView.drawLine(line: row, scrollToCursor: true)
         
+        scrollToCursor()
+    }
+    
+    func scrollToCursor() {
         if !self.editorView.cursorRects.isEmpty {
             let cursorRect = self.editorView.cursorRects.reduce(self.editorView.cursorRects[0], { a, b in a.union(b) })
             let outsetRect = cursorRect.insetBy(dx: -5, dy: -5)
@@ -1675,6 +1679,14 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
             if let bigWordSeparators = json!["big_word_separators"] as? String {
                 preferences.bigWordSeparators = bigWordSeparators
             }
+            
+            if let folderExcludePatterns = json!["folder_exclude_patterns"] as? [String] {
+                preferences.folderExcludePatterns = folderExcludePatterns
+            }
+            
+            if let fileExcludePatterns = json!["file_exclude_patterns"] as? [String] {
+                preferences.fileExcludePatterns = fileExcludePatterns
+            }
         }
         
         reload()
@@ -1702,6 +1714,7 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
                 self.mouseDragged(with: event)
             }
         })
+        
         dragEvent = theEvent
         self.editorView.mouseDownHelper(event: theEvent)
     }

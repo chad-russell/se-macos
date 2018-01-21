@@ -10,22 +10,6 @@ import Cocoa
 
 class SEWindow: NSWindow {
     
-//    override func makeFirstResponder(_ responder: NSResponder?) -> Bool {
-//        print("making first responder: \(responder)")
-//        
-//        let superReturn = super.makeFirstResponder(responder)
-//        
-//        var next = NSApplication.shared.keyWindow?.firstResponder
-//        while next != nil {
-//            print("chain: \(next)")
-//            next = next?.nextResponder
-//        }
-//        
-//        print("")
-//        
-//        return superReturn
-//    }
-    
     override var acceptsFirstResponder: Bool {
         get { return false }
     }

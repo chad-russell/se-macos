@@ -30,7 +30,10 @@ class SEBufferViewController: SEBufferViewControllerBase {
     @IBOutlet weak var treeViewResizerWidth: NSLayoutConstraint!
     @IBOutlet weak var outlineView: NSOutlineView!
     
+    @IBOutlet weak var openFilesWidth: NSLayoutConstraint!
     @IBOutlet weak var commandView: NSView!
+    
+    @IBOutlet weak var commandPaneHeight: NSLayoutConstraint!
     
     override var lineWidthConstraint: NSLayoutConstraint? { return editorViewWidth }
     
@@ -40,7 +43,6 @@ class SEBufferViewController: SEBufferViewControllerBase {
     var lastMouseDownInsideView = false
     
     var currentDirectory: URL?
-    var outlineItems: [OutlineItem] = []
     var flattenedFileOutlineItems: [OutlineItem] = []
     
     override func viewDidLoad() {
@@ -64,6 +66,8 @@ class SEBufferViewController: SEBufferViewControllerBase {
         self.treeView.isHidden = true
         self.treeViewResizer.isHidden = true
         
+        self.treeView.wantsLayer = true
+        self.treeView.layer?.backgroundColor = NSColor.white.cgColor
         self.treeView.delegate = self
         self.treeView.resizer = treeViewResizer
         self.treeViewResizer.delegate = self.treeView
@@ -73,6 +77,7 @@ class SEBufferViewController: SEBufferViewControllerBase {
         
         self.treeViewWidth.constant = 0
         self.treeViewResizerWidth.constant = 0
+        self.openFilesWidth.constant = 0
         
         let synchronizedContentView = editorView.enclosingScrollView!.contentView
         synchronizedContentView.postsBoundsChangedNotifications = true
@@ -82,24 +87,8 @@ class SEBufferViewController: SEBufferViewControllerBase {
     }
     
     func refreshOutlineItems(_ url: URL) {
-        outlineItems = [getFileOutlineItem(url: url)]
-        
-        flattenedFileOutlineItems = []
-        for item in outlineItems {
-            addFlattenedFileOutlineItems(item)
-        }
-        
+        populateOutlineItems(url: url)
         self.outlineView.reloadData()
-    }
-    
-    func addFlattenedFileOutlineItems(_ item: OutlineItem) {
-        if item.children.isEmpty {
-            flattenedFileOutlineItems.append(item)
-        } else {
-            for child in item.children {
-                addFlattenedFileOutlineItems(child)
-            }
-        }
     }
     
     override func viewWillDisappear() {
@@ -107,23 +96,48 @@ class SEBufferViewController: SEBufferViewControllerBase {
         editor_buffer_destroy(buf!)
     }
     
-    func getFileOutlineItem(url: URL) -> OutlineItem {
-        do {
-            var isDir: ObjCBool = false
-            if FileManager.default.fileExists(atPath: url.path, isDirectory: &isDir) {
-                if isDir.boolValue {
-                    var children: [OutlineItem] = []
-                    for child in try FileManager.default.contentsOfDirectory(atPath: url.path) {
-                        children.append(getFileOutlineItem(url: url.appendingPathComponent(child)))
-                    }
-                    return OutlineItem(name: url, children: children)
+    func populateOutlineItems(url: URL) {
+        let contents = FileManager.default.enumerator(at: url, includingPropertiesForKeys: [.isDirectoryKey], options: FileManager.DirectoryEnumerationOptions.skipsHiddenFiles, errorHandler: nil)!
+        
+        flattenedFileOutlineItems = []
+        
+        let outlineItem = OutlineItem(name: url, index: flattenedFileOutlineItems.count, isDirectory: url.isDirectory)
+        let parentIndexStack: NSMutableArray = [contents.level]
+        var currentParent = outlineItem
+        
+        flattenedFileOutlineItems.append(outlineItem)
+        
+        for case let child as URL in contents {
+            let isDirectory = child.isDirectory
+            
+            let excludePatterns = isDirectory ? preferences.folderExcludePatterns : preferences.fileExcludePatterns
+            
+            if contents.level == parentIndexStack.count + 1 {
+                parentIndexStack.add(flattenedFileOutlineItems.count - 1)
+            } else {
+                assert(contents.level <= parentIndexStack.count)
+                
+                while contents.level < parentIndexStack.count {
+                    parentIndexStack.removeLastObject()
                 }
             }
-        } catch {
-            print("error: \(error)")
+            
+            currentParent = flattenedFileOutlineItems[parentIndexStack.lastObject as! Int]
+            
+            var exclude = false
+            for pattern in excludePatterns {
+                if child.path.contains(pattern) {
+                    exclude = true
+                }
+            }
+            
+            if !exclude {
+                currentParent.childCount += 1
+                flattenedFileOutlineItems.append(OutlineItem(name: child, index: flattenedFileOutlineItems.count, isDirectory: isDirectory))
+            } else if isDirectory {
+                contents.skipDescendants()
+            }
         }
-        
-        return OutlineItem(name: url, children: [])
     }
     
     @objc
@@ -145,6 +159,8 @@ class SEBufferViewController: SEBufferViewControllerBase {
             self.commandViewController?.handleMouseDown(with: theEvent)
             return
         }
+        
+        self.updateFooterView()
         
         super.handleMouseDown(with: theEvent)
     }
@@ -178,10 +194,14 @@ class SEBufferViewController: SEBufferViewControllerBase {
         self.editorView.needsDisplay = true
     }
     
-    func showCommandView() {
+    func showCommandView(delegate: CommandDelegate) {
         if showingCommandView { return }
         
         showingCommandView = true
+        
+        if let cvc = self.commandViewController {
+            cvc.delegate = delegate
+        }
         
         // clear all text
         // @TODO(chad): clean this up a LOT
@@ -199,19 +219,27 @@ class SEBufferViewController: SEBufferViewControllerBase {
         self.editorView.needsDisplay = true
     }
     
-    func toggleCommandView() {
+    func toggleCommandView(delegate: CommandDelegate) {
         if showingCommandView { hideCommandView() }
-        else { showCommandView() }
+        else { showCommandView(delegate: delegate) }
     }
     
     override func handleKeyDown(with event: NSEvent) {
         if event.keyCode == 35 && event.modifierFlags.contains(.command) {
             // cmd + p
-            toggleCommandView()
+            if let cvc = self.commandViewController {
+                toggleCommandView(delegate: SearchCommandDelegate(delegate: cvc))
+            }
             return
         } else if event.keyCode == 40 && event.modifierFlags.contains(.command) {
             // cmd + k
             toggleTreeView()
+            return
+        } else if event.keyCode == 37 && event.modifierFlags.contains(.command) {
+            // cmd + l
+            if let cvc = self.commandViewController {
+                toggleCommandView(delegate: JumpToLocationCommandDelegate(delegate: cvc))
+            }
             return
         }
         
@@ -239,7 +267,8 @@ class SEBufferViewController: SEBufferViewControllerBase {
             NSAnimationContext.current.timingFunction =
                 CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseOut)
             self.treeViewWidth.animator().constant = isHiding ? 0 : defaultExpandedWidth
-            self.treeViewResizerWidth.constant = isHiding ? 0 : 5
+            self.treeViewResizerWidth.animator().constant = isHiding ? 0 : 5
+            self.openFilesWidth.animator().constant = isHiding ? 0 : 20
         }, completionHandler: {
             if isHiding {
                 self.treeView.isHidden = true
@@ -311,6 +340,14 @@ class SEBufferViewController: SEBufferViewControllerBase {
             }
         }
 
+        self.view.layer?.backgroundColor = preferences.editorBackgroundColor.cgColor
+        
+        updateFooterView()
+        
+        super.reload()
+    }
+    
+    func updateFooterView() {
         // update labels
         let cursorCount = editor_buffer_get_cursor_count(buf!)
         if cursorCount > 1 {
@@ -327,17 +364,13 @@ class SEBufferViewController: SEBufferViewControllerBase {
             }
             positionLabel.stringValue = "Line \(line), Column \(column)"
         }
-
-        modeLabel.stringValue = "\(self.mode.description())"
         
-        self.view.layer?.backgroundColor = preferences.editorBackgroundColor.cgColor
+        modeLabel.stringValue = "\(self.mode.description())"
         
         // @todo(chad): is there a better place to put this wantsLayer stuff??
         // in viewDidLoad it is already too late :(
         if !self.footerView.wantsLayer { self.footerView.wantsLayer = true }
         self.footerView.layer?.backgroundColor = preferences.footerBackgroundColor.cgColor
-
-        super.reload()
     }
     
     func openFile() {
@@ -353,13 +386,15 @@ class SEBufferViewController: SEBufferViewControllerBase {
         if dialog.runModal() == NSApplication.ModalResponse.OK {
             guard let result = dialog.url else { return }
             
-            self.currentDirectory = result
-            refreshOutlineItems(result)
-            
-            var isDirectory: ObjCBool = false
-            if FileManager.default.fileExists(atPath: result.path, isDirectory: &isDirectory) {
-                if !isDirectory.boolValue {
-                    openFile(withURL: result)
+            DispatchQueue.global(qos: .userInteractive).async {
+                self.currentDirectory = result
+                self.refreshOutlineItems(result)
+                
+                var isDirectory: ObjCBool = false
+                if FileManager.default.fileExists(atPath: result.path, isDirectory: &isDirectory) {
+                    if !isDirectory.boolValue {
+                        self.openFile(withURL: result)
+                    }
                 }
             }
         }
@@ -474,6 +509,19 @@ extension SEBufferViewController: SESliderViewDelegate {
             editor_buffer_global_undo(buf!, Int64(sliderView.savedValue))
             drawLastLine()
             reload()
+        }
+    }
+}
+
+extension URL {
+    var isDirectory: Bool {
+        do {
+            if let maybeIsDirectory = try self.resourceValues(forKeys: [.isDirectoryKey]).isDirectory {
+                return maybeIsDirectory
+            } else { return false }
+        } catch {
+            print("error: \(error)")
+            return false
         }
     }
 }

@@ -27,6 +27,8 @@
 		07805D401F4FB95A00D5A42E /* SEFindViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07805D3F1F4FB95A00D5A42E /* SEFindViewController.swift */; };
 		07805D441F506D5300D5A42E /* SEGutterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07805D431F506D5300D5A42E /* SEGutterView.swift */; };
 		079D6FC41F186DCE00310B39 /* libse.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 079D6FC21F186BE100310B39 /* libse.a */; };
+		07A9B58E201414070076B326 /* SearchCommandDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07A9B58D201414070076B326 /* SearchCommandDelegate.swift */; };
+		07A9B5902014220C0076B326 /* JumpToLocationCommandDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07A9B58F2014220C0076B326 /* JumpToLocationCommandDelegate.swift */; };
 		07B042901F4B7633002EEFD2 /* SEBufferViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07B0428F1F4B7633002EEFD2 /* SEBufferViewController.swift */; };
 		07D4EE921F5356D2002A9CFE /* SEBufferDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07D4EE911F5356D2002A9CFE /* SEBufferDelegate.swift */; };
 		07D4EE961F53C34C002A9CFE /* SECommandPaneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07D4EE951F53C34C002A9CFE /* SECommandPaneView.swift */; };
@@ -69,6 +71,8 @@
 		07805D431F506D5300D5A42E /* SEGutterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SEGutterView.swift; sourceTree = "<group>"; };
 		079D6FC21F186BE100310B39 /* libse.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libse.a; path = ../Clion/se/build/libse.a; sourceTree = "<group>"; };
 		079DE6F91EAAA60A00345299 /* libczmq.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libczmq.a; path = ../../../../usr/local/Cellar/czmq/4.0.2/lib/libczmq.a; sourceTree = "<group>"; };
+		07A9B58D201414070076B326 /* SearchCommandDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchCommandDelegate.swift; sourceTree = "<group>"; };
+		07A9B58F2014220C0076B326 /* JumpToLocationCommandDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JumpToLocationCommandDelegate.swift; sourceTree = "<group>"; };
 		07B0428F1F4B7633002EEFD2 /* SEBufferViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SEBufferViewController.swift; sourceTree = "<group>"; };
 		07D4EE911F5356D2002A9CFE /* SEBufferDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SEBufferDelegate.swift; sourceTree = "<group>"; };
 		07D4EE951F53C34C002A9CFE /* SECommandPaneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SECommandPaneView.swift; sourceTree = "<group>"; };
@@ -169,6 +173,8 @@
 			isa = PBXGroup;
 			children = (
 				070760421F54547000D6FB9B /* SECommandPaneViewController.swift */,
+				07A9B58D201414070076B326 /* SearchCommandDelegate.swift */,
+				07A9B58F2014220C0076B326 /* JumpToLocationCommandDelegate.swift */,
 				07673071200FF6E50090FF17 /* SEFindTableCellView.swift */,
 				07D4EE951F53C34C002A9CFE /* SECommandPaneView.swift */,
 			);
@@ -259,10 +265,12 @@
 				070760431F54547000D6FB9B /* SECommandPaneViewController.swift in Sources */,
 				0767306C200E8DB90090FF17 /* SETreeViewCell.swift in Sources */,
 				0767306A200E8D7A0090FF17 /* TreeViewDelegate.swift in Sources */,
+				07A9B5902014220C0076B326 /* JumpToLocationCommandDelegate.swift in Sources */,
 				07B042901F4B7633002EEFD2 /* SEBufferViewController.swift in Sources */,
 				0724AC3C1EAA7C5200E7CFBB /* AppDelegate.swift in Sources */,
 				07673072200FF6E50090FF17 /* SEFindTableCellView.swift in Sources */,
 				07673068200E8D7A0090FF17 /* SETreeViewResizer.swift in Sources */,
+				07A9B58E201414070076B326 /* SearchCommandDelegate.swift in Sources */,
 				07805D401F4FB95A00D5A42E /* SEFindViewController.swift in Sources */,
 				07673070200EDBF80090FF17 /* SEOutlineView.swift in Sources */,
 				07673069200E8D7A0090FF17 /* SETreeView.swift in Sources */,
