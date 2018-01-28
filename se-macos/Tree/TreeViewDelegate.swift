@@ -8,15 +8,31 @@
 
 import Cocoa
 
+enum OutlineItemSelection {
+    case tentative
+    case selected
+    case none
+}
+
+extension OutlineItemSelection {
+    func getColor() -> NSColor {
+        switch self {
+        case .tentative:
+            return NSColor(red: 230.0 / 255, green: 233.0 / 255, blue: 237.0 / 255, alpha: 1)
+        case .selected:
+            return NSColor(red: 207.0 / 255, green: 211.0 / 255, blue: 219.0 / 255, alpha: 1)
+        case .none:
+            return NSColor.clear
+        }
+    }
+}
+
 class OutlineItem {
     let name: URL
     var expanded: Bool = false
-    
     let index: Int
     var childCount = 0
-
     let isDirectory: Bool
-    
     var attributedString: NSMutableAttributedString
     
     // for 'mapping'
@@ -90,6 +106,7 @@ extension SEBufferViewController: NSOutlineViewDelegate, NSOutlineViewDataSource
         
         if let item = item as? OutlineItem {
             view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "OutlineItemCell"), owner: self) as? SETreeViewCell
+            view?.wantsLayer = true
             
             if let textField = view?.label {
                 textField.stringValue = item.name.lastPathComponent
@@ -107,9 +124,20 @@ extension SEBufferViewController: NSOutlineViewDelegate, NSOutlineViewDataSource
                     }
                 }
             }
+            
+//            view?.layer?.backgroundColor = item.index == outlineView.selectedRow ?
+//                OutlineItemSelection.selected.getColor().cgColor :
+//                OutlineItemSelection.none.getColor().cgColor
+            
+//            view?.outlineItem = item
+//            view?.delegate = self
         }
         
         return view
+    }
+    
+    func outlineView(_ outlineView: NSOutlineView, rowViewForItem item: Any) -> NSTableRowView? {
+        return SEOutlineRowView()
     }
     
     func outlineView(_ outlineView: NSOutlineView, shouldSelectItem item: Any) -> Bool {
@@ -132,14 +160,24 @@ extension SEBufferViewController: NSOutlineViewDelegate, NSOutlineViewDataSource
     
     func outlineViewSelectionDidChange(_ notification: Notification) {
         if let item = self.outlineView.item(atRow: self.outlineView.selectedRow) as? OutlineItem {
-            if !item.isDirectory {
+            if item.isDirectory {
+                if item.expanded {
+                    self.outlineView.collapseItem(item)
+                } else {
+                    self.outlineView.expandItem(item)
+                }
+                
+                self.outlineView.deselectAll(nil)
+            } else {
+                self.selectedOutlineIndex = item.index
+                
                 editor_buffer_destroy(self.buf!)
                 self.buf = editor_buffer_create(UInt32(preferences.virtualNewlineLength))
                 
                 editor_buffer_open_file(self.buf!, UInt32(self.preferences.virtualNewlineLength), item.name.path)
+                
                 self.reload()
             }
         }
-        
     }
 }

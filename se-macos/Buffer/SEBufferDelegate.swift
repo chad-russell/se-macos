@@ -39,8 +39,8 @@ struct SEEditorPreferences {
     var cursorColor = NSColor(red: 0.7, green: 0.7, blue: 1, alpha: 1)
     var selectionColor = NSColor(red: 0.7, green: 0.7, blue: 1, alpha: 0.3)
     
-    var charHeight: CGFloat = 0
-    var charWidth: CGFloat = 0
+    var charHeight = NSString(string: "p").size(withAttributes: [NSAttributedStringKey.font: NSFont(name: "Inconsolata", size: 16)!]).height + 1
+    var charWidth = NSString(string: "0").size(withAttributes: [NSAttributedStringKey.font: NSFont(name: "Inconsolata", size: 16)!]).width + 1
     
     var tabs: String = "\t"
     var wordSeparators: String = "\n\t`~!@#$%^&*()-_=+[]{},.<>/? "
@@ -51,20 +51,36 @@ struct SEEditorPreferences {
 }
 
 enum SEMode {
-    case insert
+    case insert(append: Bool)
     case normal
     case visual(line: Bool)
+}
+
+extension SEMode: Equatable {
+    static func ==(lhs: SEMode, rhs: SEMode) -> Bool {
+        switch (lhs, rhs) {
+        case (.insert(let lhsAppend), .insert(let rhsAppend)): return lhsAppend == rhsAppend
+        case (.normal, .normal): return true
+        case (.visual(let lhsLine), .visual(let rhsLine)): return lhsLine == rhsLine
+        default: return false
+        }
+    }
 }
 
 extension SEMode {
     func isVisual() -> (Bool, Bool) {
         switch self {
-        case .insert:
-            return (false, false)
-        case .normal:
+        case .insert, .normal:
             return (false, false)
         case .visual(let line):
             return (true, line)
+        }
+    }
+    
+    func isInsert() -> Bool {
+        switch self {
+        case .insert(_): return true
+        default: return false
         }
     }
     

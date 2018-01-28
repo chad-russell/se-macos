@@ -44,6 +44,8 @@ class SEEditorView: NSView {
         
         layer.backgroundColor = preferences.editorBackgroundColor.cgColor
         
+        self.cursorRects = []
+        
         let lineCount: Int64
         if preferences.virtualNewlines {
             lineCount = editor_buffer_get_line_count_virtual(delegate.buf!, preferences.virtualNewlineLength)
@@ -156,8 +158,7 @@ class SEEditorView: NSView {
                     cursorSelectionRow = editor_buffer_get_cursor_selection_start_row(delegate.buf!, cursorIdx)
                 }
                 
-                let (isVisual, isLine) = delegate.mode.isVisual()
-                if isVisual && isLine {
+                if case let (isVisual, isLine) = delegate.mode.isVisual(), isVisual && isLine {
                     if cursorRow <= cursorSelectionRow {
                         let lastCol: Int64
                         if preferences.virtualNewlines {
@@ -334,7 +335,7 @@ class SEEditorView: NSView {
 
         let gutterOffset: CGFloat = 3
         let clickedCol = CTLineGetStringIndexForPosition(ctLine, CGPoint(x: clickedPoint.x - gutterOffset, y: 0))
-
+        
         if event.modifierFlags.contains(.command) {
             if !drag {
                 if preferences.virtualNewlines {

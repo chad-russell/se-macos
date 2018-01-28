@@ -30,6 +30,7 @@
 		07A9B58E201414070076B326 /* SearchCommandDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07A9B58D201414070076B326 /* SearchCommandDelegate.swift */; };
 		07A9B5902014220C0076B326 /* JumpToLocationCommandDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07A9B58F2014220C0076B326 /* JumpToLocationCommandDelegate.swift */; };
 		07B042901F4B7633002EEFD2 /* SEBufferViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07B0428F1F4B7633002EEFD2 /* SEBufferViewController.swift */; };
+		07D0CC09201549B500AEE86F /* SEOutlineRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07D0CC08201549B500AEE86F /* SEOutlineRowView.swift */; };
 		07D4EE921F5356D2002A9CFE /* SEBufferDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07D4EE911F5356D2002A9CFE /* SEBufferDelegate.swift */; };
 		07D4EE961F53C34C002A9CFE /* SECommandPaneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07D4EE951F53C34C002A9CFE /* SECommandPaneView.swift */; };
 /* End PBXBuildFile section */
@@ -74,6 +75,7 @@
 		07A9B58D201414070076B326 /* SearchCommandDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchCommandDelegate.swift; sourceTree = "<group>"; };
 		07A9B58F2014220C0076B326 /* JumpToLocationCommandDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JumpToLocationCommandDelegate.swift; sourceTree = "<group>"; };
 		07B0428F1F4B7633002EEFD2 /* SEBufferViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SEBufferViewController.swift; sourceTree = "<group>"; };
+		07D0CC08201549B500AEE86F /* SEOutlineRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SEOutlineRowView.swift; sourceTree = "<group>"; };
 		07D4EE911F5356D2002A9CFE /* SEBufferDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SEBufferDelegate.swift; sourceTree = "<group>"; };
 		07D4EE951F53C34C002A9CFE /* SECommandPaneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SECommandPaneView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -134,6 +136,7 @@
 				07673066200E8D7A0090FF17 /* SETreeView.swift */,
 				07673067200E8D7A0090FF17 /* TreeViewDelegate.swift */,
 				0767306B200E8DB90090FF17 /* SETreeViewCell.swift */,
+				07D0CC08201549B500AEE86F /* SEOutlineRowView.swift */,
 			);
 			path = Tree;
 			sourceTree = "<group>";
@@ -261,6 +264,7 @@
 				074EB2341F3FFD1500F055E3 /* SEWindowController.swift in Sources */,
 				0719ABA91F54DE33006A8457 /* SEBufferViewControllerBase.swift in Sources */,
 				0767306E200EC1EA0090FF17 /* SEWindow.swift in Sources */,
+				07D0CC09201549B500AEE86F /* SEOutlineRowView.swift in Sources */,
 				07805D441F506D5300D5A42E /* SEGutterView.swift in Sources */,
 				070760431F54547000D6FB9B /* SECommandPaneViewController.swift in Sources */,
 				0767306C200E8DB90090FF17 /* SETreeViewCell.swift in Sources */,

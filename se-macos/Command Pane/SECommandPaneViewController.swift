@@ -105,6 +105,14 @@ class SECommandPaneViewController: SEBufferViewControllerBase {
             delegate?.select(selectedItemIndex)
             selectedItemIndex = 0
             return
+        } else if event.keyCode == 31 {
+            // o
+            switch mode {
+            case .insert:
+                break
+            case .normal, .visual:
+                return
+            }
         } else if event.keyCode == 126 {
             // up
             selectedItemIndex = max(selectedItemIndex - 1, 0)

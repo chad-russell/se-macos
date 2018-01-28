@@ -62,8 +62,12 @@ class SETreeViewResizer: NSView {
     override func mouseUp(with event: NSEvent) {
         dragging = false
         
-        if let delegate = delegate?.delegate, delegate.treeViewWidth.constant < delegate.treeViewMinWidth.constant {
-            delegate.treeViewWidth.constant = delegate.treeViewMinWidth.constant
+        if let del = delegate?.delegate {
+            if del.treeViewWidth.constant < del.treeViewMinWidth.constant {
+                del.treeViewWidth.constant = del.treeViewMinWidth.constant
+            }
+            
+            del.lastTreeViewWidth = del.treeViewWidth.constant
         }
         
         NSApplication.shared.keyWindow?.enableCursorRects()
@@ -76,6 +80,7 @@ class SETreeViewResizer: NSView {
         } else {
             NSCursor.resizeLeftRight.set()
         }
+        
     }
     
     func setupTrackingArea() {

@@ -36,20 +36,21 @@ class SearchCommandDelegate: CommandDelegate {
             
             for item in filteredItems {
                 let foundMatch = fuzzy_match(pattern, item.name.lastPathComponent, &(item.outScore), matches, Int32(maxMatches))
-                
-                //                let realMatches = Array<UInt8>(UnsafeBufferPointer(start: matches, count: maxMatches))
-                
-                // reset the attributes
-                //                item.attributedString.removeAttribute(.underlineStyle, range: NSRange(location: 0, length: item.name.lastPathComponent.count))
-                //                item.attributedString.setAttributes([:], range: NSRange(location: 0, length: item.name.lastPathComponent.count))
-                
-                //                if foundMatch == 1 {
-                //                    for match in realMatches {
-                //                        item.attributedString.addAttributes([.underlineStyle: NSUnderlineStyle.styleSingle.rawValue | NSUnderlineStyle.patternSolid.rawValue], range: NSRange(location: Int(match), length: 1))
-                
-                //                        item.attributedString.addAttributes([NSAttributedStringKey.font: boldFont], range: NSRange(location: Int(match), length: 1))
-                //                    }
-                //                }
+
+                if filteredItems.count < 1000 {
+                    let realMatches = Array<UInt8>(UnsafeBufferPointer(start: matches, count: maxMatches))
+                    // reset the attributes
+                    item.attributedString.removeAttribute(.underlineStyle, range: NSRange(location: 0, length: item.name.lastPathComponent.count))
+                    item.attributedString.setAttributes([:], range: NSRange(location: 0, length: item.name.lastPathComponent.count))
+                    
+                    if foundMatch == 1 {
+                        for match in realMatches {
+                            item.attributedString.addAttributes([.underlineStyle: NSUnderlineStyle.styleSingle.rawValue | NSUnderlineStyle.patternSolid.rawValue], range: NSRange(location: Int(match), length: 1))
+                            
+                            item.attributedString.addAttributes([NSAttributedStringKey.font: boldFont], range: NSRange(location: Int(match), length: 1))
+                        }
+                    }
+                }
                 
                 item.foundMatch = foundMatch == 1
             }

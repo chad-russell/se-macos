@@ -344,17 +344,17 @@
                                             <constraint firstAttribute="width" priority="900" constant="5" id="HPG-Qp-wrq"/>
                                         </constraints>
                                     </customView>
-                                    <scrollView borderType="none" autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="w0A-qB-3bM">
+                                    <scrollView borderType="none" autohidesScrollers="YES" horizontalLineScroll="24" horizontalPageScroll="10" verticalLineScroll="24" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="w0A-qB-3bM">
                                         <rect key="frame" x="0.0" y="0.0" width="195" height="555"/>
-                                        <clipView key="contentView" id="908-iB-FNO">
+                                        <clipView key="contentView" drawsBackground="NO" id="908-iB-FNO">
                                             <rect key="frame" x="0.0" y="0.0" width="195" height="555"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
-                                                <outlineView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" multipleSelection="NO" autosaveColumns="NO" rowSizeStyle="automatic" viewBased="YES" indentationPerLevel="16" outlineTableColumn="NTa-Qo-JRW" id="AdK-QR-cZT" customClass="SEOutlineView" customModule="se_macos" customModuleProvider="target">
+                                                <outlineView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" multipleSelection="NO" autosaveColumns="NO" rowHeight="24" rowSizeStyle="systemDefault" viewBased="YES" indentationPerLevel="16" indentationMarkerFollowsCell="NO" outlineTableColumn="NTa-Qo-JRW" id="AdK-QR-cZT" customClass="SEOutlineView" customModule="se_macos" customModuleProvider="target">
                                                     <rect key="frame" x="0.0" y="0.0" width="195" height="555"/>
                                                     <autoresizingMask key="autoresizingMask"/>
-                                                    <size key="intercellSpacing" width="3" height="2"/>
-                                                    <color key="backgroundColor" red="0.99999600649999998" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                    <size key="intercellSpacing" width="3" height="0.0"/>
+                                                    <color key="backgroundColor" red="0.99999600649999998" green="1" blue="1" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
                                                     <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                                     <tableColumns>
                                                         <tableColumn identifier="" width="192" minWidth="40" maxWidth="1000" id="NTa-Qo-JRW">
@@ -371,19 +371,19 @@
                                                             <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                             <prototypeCellViews>
                                                                 <tableCellView identifier="OutlineItemCell" id="Spj-rA-Cxq" customClass="SETreeViewCell" customModule="se_macos" customModuleProvider="target">
-                                                                    <rect key="frame" x="1" y="1" width="192" height="17"/>
+                                                                    <rect key="frame" x="1" y="0.0" width="192" height="17"/>
                                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                     <subviews>
                                                                         <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="PBc-en-oin">
-                                                                            <rect key="frame" x="3" y="0.0" width="17" height="17"/>
+                                                                            <rect key="frame" x="3" y="1" width="15" height="15"/>
                                                                             <constraints>
                                                                                 <constraint firstAttribute="width" secondItem="PBc-en-oin" secondAttribute="height" multiplier="1:1" id="XfP-o2-HQc"/>
                                                                             </constraints>
                                                                             <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" id="Cgh-pm-ch0"/>
                                                                         </imageView>
                                                                         <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="4zt-8S-Z8I">
-                                                                            <rect key="frame" x="26" y="0.0" width="168" height="17"/>
-                                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Label" id="kkk-ny-TYk">
+                                                                            <rect key="frame" x="24" y="0.0" width="170" height="17"/>
+                                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="left" title="Label" id="kkk-ny-TYk">
                                                                                 <font key="font" metaFont="system"/>
                                                                                 <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
@@ -391,13 +391,12 @@
                                                                         </textField>
                                                                     </subviews>
                                                                     <constraints>
-                                                                        <constraint firstItem="4zt-8S-Z8I" firstAttribute="top" secondItem="Spj-rA-Cxq" secondAttribute="top" id="2w4-vA-N2d"/>
                                                                         <constraint firstAttribute="trailing" secondItem="4zt-8S-Z8I" secondAttribute="trailing" id="7VB-sp-iL6"/>
+                                                                        <constraint firstItem="4zt-8S-Z8I" firstAttribute="centerY" secondItem="Spj-rA-Cxq" secondAttribute="centerY" id="8J0-g3-nHs"/>
                                                                         <constraint firstItem="4zt-8S-Z8I" firstAttribute="leading" secondItem="PBc-en-oin" secondAttribute="trailing" priority="900" constant="8" id="KdD-QV-wic"/>
                                                                         <constraint firstItem="PBc-en-oin" firstAttribute="leading" secondItem="Spj-rA-Cxq" secondAttribute="leading" priority="900" constant="3" id="Mas-vh-HHH"/>
-                                                                        <constraint firstAttribute="bottom" secondItem="PBc-en-oin" secondAttribute="bottom" id="RwO-TW-eS5"/>
-                                                                        <constraint firstAttribute="bottom" secondItem="4zt-8S-Z8I" secondAttribute="bottom" id="Zt0-tn-CeQ"/>
-                                                                        <constraint firstItem="PBc-en-oin" firstAttribute="top" secondItem="Spj-rA-Cxq" secondAttribute="top" id="snR-qW-ymg"/>
+                                                                        <constraint firstAttribute="bottom" secondItem="PBc-en-oin" secondAttribute="bottom" constant="1" id="RwO-TW-eS5"/>
+                                                                        <constraint firstItem="PBc-en-oin" firstAttribute="top" secondItem="Spj-rA-Cxq" secondAttribute="top" constant="1" id="snR-qW-ymg"/>
                                                                     </constraints>
                                                                     <connections>
                                                                         <outlet property="image" destination="PBc-en-oin" id="V42-m0-nsT"/>

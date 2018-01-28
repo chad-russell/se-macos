@@ -1,3 +1,4 @@
+
 //
 //  SEEditorViewController.swift
 //  se-macos
@@ -24,7 +25,10 @@ class SEBufferViewController: SEBufferViewControllerBase {
     @IBOutlet weak var fileExtensionLabel: NSTextField!
     
     @IBOutlet weak var treeView: SETreeView!
+    
     @IBOutlet weak var treeViewWidth: NSLayoutConstraint!
+    var lastTreeViewWidth: CGFloat = 200
+    
     @IBOutlet weak var treeViewMinWidth: NSLayoutConstraint!
     @IBOutlet weak var treeViewResizer: SETreeViewResizer!
     @IBOutlet weak var treeViewResizerWidth: NSLayoutConstraint!
@@ -44,6 +48,7 @@ class SEBufferViewController: SEBufferViewControllerBase {
     
     var currentDirectory: URL?
     var flattenedFileOutlineItems: [OutlineItem] = []
+    var selectedOutlineIndex: Int = -1
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -211,6 +216,7 @@ class SEBufferViewController: SEBufferViewControllerBase {
             editor_buffer_set_cursor_is_selection(vcBuf, 1)
             editor_buffer_set_cursor_pos(vcBuf, chars)
             editor_buffer_delete(vcBuf)
+            editor_buffer_set_cursor_is_selection(vcBuf, 0)
         }
         
         self.commandViewController?.reload()
@@ -266,7 +272,7 @@ class SEBufferViewController: SEBufferViewControllerBase {
             NSAnimationContext.current.duration = 0.1
             NSAnimationContext.current.timingFunction =
                 CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseOut)
-            self.treeViewWidth.animator().constant = isHiding ? 0 : defaultExpandedWidth
+            self.treeViewWidth.animator().constant = isHiding ? 0 : lastTreeViewWidth
             self.treeViewResizerWidth.animator().constant = isHiding ? 0 : 5
             self.openFilesWidth.animator().constant = isHiding ? 0 : 20
         }, completionHandler: {

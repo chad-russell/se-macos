@@ -31,32 +31,29 @@ enum vim {
     case findBackward
     case inner
     case around
+    case matching
     
     // operations
     case delete
     case yank
     case change
-    
-    // replace
+    case paste
     case replace
+    case unindent
+    case indent
     
     // repeat
     case repeatCount(value: Int)
     
-    // raw characters (e.g. for 'replace')
+    // other
     case rawChars(chars: String)
+    case changeMode(mode: SEMode)
 }
 
 extension vim {
     var isOperation: Bool {
         switch self {
-        case .delete:
-            return true
-        case .yank:
-            return true
-        case .change:
-            return true
-        case .replace:
+        case .delete, .yank, .change, .replace, .paste, .replace, .indent, .unindent:
             return true
         default:
             return false
@@ -94,6 +91,10 @@ extension vim: Equatable {
         case (.findBackward, .findBackward): return true
         case (.inner, .inner): return true
         case (.around, .around): return true
+        case (.changeMode(let lhsMode), .changeMode(let rhsMode)): return lhsMode == rhsMode
+        case (.paste, .paste): return true
+        case (.indent, .indent): return true
+        case (.unindent, .unindent): return true
         default: return false
         }
     }
@@ -103,12 +104,29 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
     @IBOutlet var editorView: SEEditorView!
     
     var preferences = SEEditorPreferences()
-    var mode = SEMode.insert
+    
+    var mode = SEMode.insert(append: false)
+    
     var buf: editor_buffer_t? = editor_buffer_create(80)
     let pasteboard = NSPasteboard.general
     
     var vimStack = [vim]()
-    var lastVimStack = [vim]() // for '.' command
+    
+    // for '.' command
+    var recording = false {
+        willSet {
+            // only clear the dot stack if we previously were NOT recording
+            if !recording && newValue {
+                dotVimStack = []
+            }
+        }
+    }
+    var playback = false
+    var dotVimStack = [vim]()
+    
+    // for macros
+    var recordingMacro = false
+    var macroEvents = [NSEvent]()
     
     var lineWidthConstraint: NSLayoutConstraint? { return nil }
     
@@ -187,11 +205,19 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
     func handleKeyDown(with event: NSEvent) {
 //        Swift.print(event.keyCode)
         
+        let isMacroRecordEvent = event.keyCode == 46 && event.modifierFlags.contains(.command)
+        if recordingMacro && !isMacroRecordEvent {
+            macroEvents.append(event)
+        }
+        
         switch mode {
         case .insert: handleKeyDownForInsertMode(event)
         case .normal: handleKeyDownForNormalMode(event)
         case .visual: handleKeyDownForNormalMode(event)
         }
+        
+        interpretVim()
+        sort_and_merge_cursors(buf!)
         
         reload()
     }
@@ -199,36 +225,28 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
     func handleKeyDownForInsertMode(_ event: NSEvent) {
         if event.keyCode == 48 {
             // tab
-            editor_buffer_insert(buf!, preferences.tabs)
+            vimStack.append(.rawChars(chars: preferences.tabs))
         } else if event.keyCode == 123 {
             // left
             editor_buffer_set_cursor_is_selection(buf!, event.modifierFlags.contains(.shift) ? 1 : 0)
             
             if event.modifierFlags.contains(.command) {
-                if preferences.virtualNewlines {
-                    editor_buffer_set_cursor_point_to_start_of_line_virtual(buf!, preferences.virtualNewlineLength)
-                } else {
-                    editor_buffer_set_cursor_point_to_start_of_line(buf!)
-                }
+                vimStack.append(.startOfLine)
             } else if event.modifierFlags.contains(.option) {
-                editor_buffer_set_cursor_point_to_start_of_previous_word(buf!, preferences.wordSeparators)
+                vimStack.append(.previousWord)
             } else {
-                editor_buffer_set_cursor_pos_relative(buf!, -1)
+                vimStack.append(.left)
             }
         } else if event.keyCode == 124 {
             // right
             editor_buffer_set_cursor_is_selection(buf!, event.modifierFlags.contains(.shift) ? 1 : 0)
             
             if event.modifierFlags.contains(.command) {
-                if preferences.virtualNewlines {
-                    editor_buffer_set_cursor_point_to_end_of_line_virtual(buf!, preferences.virtualNewlineLength)
-                } else {
-                    editor_buffer_set_cursor_point_to_end_of_line(buf!)
-                }
+                vimStack.append(.endOfLine)
             } else if event.modifierFlags.contains(.option) {
-                editor_buffer_set_cursor_point_to_start_of_next_word(buf!, preferences.wordSeparators)
+                vimStack.append(.word)
             } else {
-                editor_buffer_set_cursor_pos_relative(buf!, 1)
+                vimStack.append(.right)
             }
         } else if event.keyCode == 125 {
             // down
@@ -238,36 +256,9 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
                 let charCount = editor_buffer_get_char_count(buf!)
                 editor_buffer_set_cursor_pos(buf!, charCount)
             } else if event.modifierFlags.contains(.option) {
-                for i in 0 ..< editor_buffer_get_cursor_count(buf!) {
-                    if preferences.virtualNewlines {
-                        var cursorRow = editor_buffer_get_cursor_row_virtual(buf!, i, preferences.virtualNewlineLength) + 1
-                        let lineCount = editor_buffer_get_line_count_virtual(buf!, preferences.virtualNewlineLength)
-                        while cursorRow < lineCount && editor_buffer_get_line_length_virtual(buf!, cursorRow, preferences.virtualNewlineLength) > 0 {
-                            cursorRow += 1
-                        }
-                        editor_buffer_set_cursor_point_virtual_for_cursor_index(buf!, i, cursorRow, 0, preferences.virtualNewlineLength)
-                    } else {
-                        var cursorRow = editor_buffer_get_cursor_row(buf!, i) + 1
-                        let lineCount = editor_buffer_get_line_count(buf!)
-                        while cursorRow < lineCount && editor_buffer_get_line_length(buf!, cursorRow) > 0 {
-                            cursorRow += 1
-                        }
-                        editor_buffer_set_cursor_point_for_cursor_index(buf!, i, cursorRow, 0)
-                    }
-                }
+                vimStack.append(.paragraph)
             } else {
-                // todo(chad): make an editor_buffer_set_cursor_point_row_relative and virtual counterpart
-                for i in 0..<editor_buffer_get_cursor_count(buf!) {
-                    if preferences.virtualNewlines {
-                        let cursorRow = editor_buffer_get_cursor_row_virtual(buf!, i, preferences.virtualNewlineLength)
-                        let cursorCol = editor_buffer_get_cursor_col_virtual(buf!, i, preferences.virtualNewlineLength)
-                        editor_buffer_set_cursor_point_virtual_for_cursor_index(buf!, i, cursorRow + 1, cursorCol, preferences.virtualNewlineLength)
-                    } else {
-                        let cursorRow = editor_buffer_get_cursor_row(buf!, i)
-                        let cursorCol = editor_buffer_get_cursor_col(buf!, i)
-                        editor_buffer_set_cursor_point_for_cursor_index(buf!, i, cursorRow + 1, cursorCol)
-                    }
-                }
+                vimStack.append(.down)
             }
         } else if event.keyCode == 126 {
             // up
@@ -276,87 +267,47 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
             if event.modifierFlags.contains(.command) {
                 editor_buffer_set_cursor_pos(buf!, 0)
             } else if event.modifierFlags.contains(.option) {
-                for i in 0 ..< editor_buffer_get_cursor_count(buf!) {
-                    if preferences.virtualNewlines {
-                        var cursorRow = editor_buffer_get_cursor_row_virtual(buf!, i, preferences.virtualNewlineLength) - 1
-                        while cursorRow > 0 && editor_buffer_get_line_length_virtual(buf!, cursorRow, preferences.virtualNewlineLength) > 0 {
-                            cursorRow -= 1
-                        }
-                        editor_buffer_set_cursor_point_virtual_for_cursor_index(buf!, i, cursorRow, 0, preferences.virtualNewlineLength)
-                    } else {
-                        var cursorRow = editor_buffer_get_cursor_row(buf!, i) - 1
-                        while cursorRow > 0 && editor_buffer_get_line_length(buf!, cursorRow) > 0 {
-                            cursorRow -= 1
-                        }
-                        editor_buffer_set_cursor_point_for_cursor_index(buf!, i, cursorRow, 0)
-                    }
-                }
+                vimStack.append(.previousParagraph)
             } else {
-                // todo(chad): make an editor_buffer_set_cursor_point_row_relative and virtual counterpart
-                for i in 0..<editor_buffer_get_cursor_count(buf!) {
-                    if preferences.virtualNewlines {
-                        let cursorRow = editor_buffer_get_cursor_row_virtual(buf!, i, preferences.virtualNewlineLength)
-                        let cursorCol = editor_buffer_get_cursor_col_virtual(buf!, i, preferences.virtualNewlineLength)
-                        editor_buffer_set_cursor_point_virtual_for_cursor_index(buf!, i, cursorRow - 1, cursorCol, preferences.virtualNewlineLength)
-                    } else {
-                        let cursorRow = editor_buffer_get_cursor_row(buf!, i)
-                        let cursorCol = editor_buffer_get_cursor_col(buf!, i)
-                        editor_buffer_set_cursor_point_for_cursor_index(buf!, i, cursorRow - 1, cursorCol)
-                    }
-                }
+                vimStack.append(.up)
             }
         } else if event.keyCode == 36 {
             // enter
-            editor_buffer_insert(buf!, "\n")
-            editor_buffer_set_cursor_is_selection(buf!, 0)
+            vimStack.append(.rawChars(chars: "\n"))
         } else if event.keyCode == 51 {
             // backspace
             if editor_buffer_get_char_count(buf!) == 0 { return }
             
             if event.modifierFlags.contains(.command) && editor_buffer_cursor_is_selection(buf!, 0) == 0 {
-                editor_buffer_copy_last_undo(buf!)
-                
-                editor_buffer_set_saves_to_undo(buf!, 0)
-                editor_buffer_set_cursor_is_selection(buf!, 1)
-                
-                if preferences.virtualNewlines {
-                    editor_buffer_set_cursor_point_to_start_of_line_virtual(buf!, preferences.virtualNewlineLength)
-                } else {
-                    editor_buffer_set_cursor_point_to_start_of_line(buf!)
-                }
-                
-                editor_buffer_delete(buf!)
-                editor_buffer_set_cursor_is_selection(buf!, 0)
-                editor_buffer_set_saves_to_undo(buf!, 1)
+                vimStack.append(.delete)
+                vimStack.append(.startOfLine)
             } else if event.modifierFlags.contains(.option) && editor_buffer_cursor_is_selection(buf!, 0) == 0 {
-                editor_buffer_set_cursor_is_selection(buf!, 1)
-                editor_buffer_set_cursor_point_to_start_of_previous_word(buf!, preferences.wordSeparators)
-                editor_buffer_delete(buf!)
-                editor_buffer_set_cursor_is_selection(buf!, 0)
+                vimStack.append(.delete)
+                vimStack.append(.previousWord)
             } else {
-                editor_buffer_delete(buf!)
-                editor_buffer_set_cursor_is_selection(buf!, 0)
+                vimStack.append(.delete)
+                vimStack.append(.left)
+            }
+        } else if event.keyCode == 46 && event.modifierFlags.contains(.command) {
+            // m
+            if event.modifierFlags.contains(.shift) {
+                for event in macroEvents {
+                    handleKeyDown(with: event)
+                }
+            } else {
+                if !recordingMacro { macroEvents = [] }
+                recordingMacro = !recordingMacro
             }
         } else if event.keyCode == 8 && event.modifierFlags.contains(.command) {
             // c
             if event.modifierFlags.contains(.shift) && event.modifierFlags.contains(.command) {
                 editor_buffer_open_file(buf!, UInt32(preferences.virtualNewlineLength), "/Users/chadrussell/.se_config.json")
             } else {
-                copySelection()
+                vimStack.append(.yank)
             }
         } else if event.keyCode == 9 && event.modifierFlags.contains(.command) {
             // v
-            var clipboardItems: [String] = []
-            for element in pasteboard.pasteboardItems! {
-                if let str = element.string(forType: NSPasteboard.PasteboardType(rawValue: "public.utf8-plain-text")) {
-                    clipboardItems.append(str)
-                }
-            }
-            if clipboardItems.count > 0 {
-                editor_buffer_insert(buf!, clipboardItems[0])
-            }
-            
-            editor_buffer_set_cursor_is_selection(buf!, 0)
+            vimStack.append(.paste)
         } else if event.keyCode == 0 && event.modifierFlags.contains(.command) {
             // a
             editor_buffer_set_cursor_is_selection(buf!, 0)
@@ -388,20 +339,13 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
             editor_buffer_set_cursor_is_selection(buf!, 0)
         } else if event.keyCode == 33 && event.modifierFlags.contains(.control) {
             // ctrl + [ (vim-style escape into normal mode)
-            mode = .normal
-            editor_buffer_set_cursor_is_selection(buf!, 0)
+            vimStack.append(.changeMode(mode: .normal))
         } else if event.keyCode == 53 {
             // esc
-            mode = .normal
-            editor_buffer_set_cursor_is_selection(buf!, 0)
+            vimStack.append(.changeMode(mode: .normal))
         } else if let chars = event.characters {
-//            Swift.print(event.keyCode)
-            
-            editor_buffer_insert(buf!, chars)
-            editor_buffer_set_cursor_is_selection(buf!, 0)
+            vimStack.append(.rawChars(chars: chars))
         }
-        
-        sort_and_merge_cursors(buf!)
     }
     
     func handleKeyDownForNormalMode(_ event: NSEvent) {
@@ -411,12 +355,10 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
             vimStack.append(.rawChars(chars: chars))
         } else if event.keyCode == 53 {
             // esc
-            mode = .normal
-            editor_buffer_set_cursor_is_selection(buf!, 0)
+            vimStack.append(.changeMode(mode: .normal))
         } else if event.keyCode == 33 && event.modifierFlags.contains(.control) {
             // ctrl + [
-            mode = .normal
-            editor_buffer_set_cursor_is_selection(buf!, 0)
+            vimStack.append(.changeMode(mode: .normal))
         } else if event.keyCode == 33 {
             // {
             if event.modifierFlags.contains(.command) {
@@ -454,8 +396,7 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
                     }
                 }
                 
-                editor_buffer_set_cursor_is_selection(buf!, 0)
-                mode = .insert
+                vimStack.append(.changeMode(mode: .insert(append: false)))
             }
         } else if event.keyCode == 0 {
             // a
@@ -463,26 +404,14 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
             if (!vimStack.isEmpty && vimStack.last!.isOperation) || visual {
                 vimStack.append(.around)
             } else {
-                if event.modifierFlags.contains(.shift) {
-                    if preferences.virtualNewlines {
-                        editor_buffer_set_cursor_point_to_end_of_line_virtual(buf!, preferences.virtualNewlineLength)
-                    } else {
-                        editor_buffer_set_cursor_point_to_end_of_line(buf!)
-                    }
-                } else {
-                    for cursorIdx in 0 ..< editor_buffer_get_cursor_count(buf!) {
-                        if editor_buffer_cursor_is_selection(buf!, cursorIdx) == 1 {
-                            let cursorPos = editor_buffer_get_cursor_pos(buf!, cursorIdx)
-                            let cursorSelectionPos = editor_buffer_get_cursor_selection_start_pos(buf!, cursorIdx)
-                            editor_buffer_set_cursor_pos(buf!, max(cursorPos + 1, cursorSelectionPos))
-                        } else {
-                            editor_buffer_set_cursor_pos(buf!, editor_buffer_get_cursor_pos(buf!, cursorIdx) + 1)
-                        }
-                    }
-                }
+                recording = true
                 
-                editor_buffer_set_cursor_is_selection(buf!, 0)
-                mode = .insert
+                if event.modifierFlags.contains(.shift) {
+                    vimStack.append(.endOfLine)
+                    vimStack.append(.changeMode(mode: .insert(append: false)))
+                } else {
+                    vimStack.append(.changeMode(mode: .insert(append: true)))
+                }
             }
         } else if event.keyCode == 4 {
             // h
@@ -549,10 +478,17 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
                 
                 editor_buffer_set_saves_to_undo(buf!, 1)
             } else {
-                mode = .visual(line: event.modifierFlags.contains(.shift))
-                
-                editor_buffer_copy_last_undo(buf!)
-                editor_buffer_set_cursor_is_selection(buf!, 1)
+                vimStack.append(.changeMode(mode: .visual(line: event.modifierFlags.contains(.shift))))
+            }
+        } else if event.keyCode == 46 && event.modifierFlags.contains(.command) {
+            // m
+            if event.modifierFlags.contains(.shift) {
+                for event in macroEvents {
+                    handleKeyDown(with: event)
+                }
+            } else {
+                if !recordingMacro { macroEvents = [] }
+                recordingMacro = !recordingMacro
             }
         } else if event.keyCode == 2 {
             // d
@@ -574,7 +510,6 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
             } else {
                 vimStack.append(.endOfWord)
             }
-            vimStack.append(.endOfWord)
         } else if event.keyCode == 11 {
             // b
             if event.modifierFlags.contains(.shift) {
@@ -649,26 +584,18 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
                 }
             }
             
-            mode = .insert
+            vimStack.append(.changeMode(mode: .insert(append: false)))
         } else if event.keyCode == 35 {
             // p
             if !vimStack.isEmpty && (vimStack.last! == .inner || vimStack.last! == .around) {
                 vimStack.append(.rawChars(chars: "p"))
             } else {
-                var clipboardItems: [String] = []
-                for element in pasteboard.pasteboardItems! {
-                    if let str = element.string(forType: NSPasteboard.PasteboardType(rawValue: "public.utf8-plain-text")) {
-                        clipboardItems.append(str)
-                    }
-                }
-                if clipboardItems.count > 0 {
-                    editor_buffer_insert(buf!, clipboardItems[0])
-                }
-                
-                editor_buffer_set_cursor_is_selection(buf!, 0)
+                vimStack.append(.paste)
             }
         } else if event.keyCode == 8 {
             // c
+            recording = true
+            
             vimStack.append(.change)
             if event.modifierFlags.contains(.shift) {
                 vimStack.append(.endOfLine)
@@ -679,10 +606,10 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
             vimStack.append(.right)
         } else if event.keyCode == 1 {
             // s
+            recording = true
+            
             if event.modifierFlags.contains(.shift) {
                 vimStack.append(.firstNonSpaceCharacterOfLine)
-                interpretVim() // need to interpret here otherwise it stops after this, lol
-                
                 vimStack.append(.change)
                 vimStack.append(.endOfLine)
             } else {
@@ -716,57 +643,16 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
         } else if event.keyCode == 47 {
             // '.' / '>'
             if event.modifierFlags.contains(.shift) {
-                editor_buffer_copy_last_undo(buf!)
-                editor_buffer_set_saves_to_undo(buf!, 0)
-                
-                for cursorIdx in 0..<editor_buffer_get_cursor_count(buf!) {
-                    let firstRow, lastRow: Int64
-                    
-                    if editor_buffer_cursor_is_selection(buf!, cursorIdx) == 1 {
-                        let nonSelectionRow, selectionRow: Int64
-                        
-                        if preferences.virtualNewlines {
-                            nonSelectionRow = editor_buffer_get_cursor_row_virtual(buf!, cursorIdx, preferences.virtualNewlineLength)
-                            selectionRow = editor_buffer_get_cursor_selection_start_row_virtual(buf!, cursorIdx, preferences.virtualNewlineLength)
-                        } else {
-                            nonSelectionRow = editor_buffer_get_cursor_row(buf!, cursorIdx)
-                            selectionRow = editor_buffer_get_cursor_selection_start_row(buf!, cursorIdx)
-                        }
-                        
-                        firstRow = min(nonSelectionRow, selectionRow)
-                        lastRow = max(nonSelectionRow, selectionRow)
-                        
-                        var canIndent = true
-                        for row in firstRow...lastRow {
-                            let rowLength = editor_buffer_get_line_length_virtual(buf!, row, preferences.virtualNewlineLength)
-                            if Int(rowLength) + preferences.tabs.count >= preferences.virtualNewlineLength {
-                                canIndent = false
-                            }
-                        }
-                        
-                        if !canIndent { continue }
-                    } else {
-                        if preferences.virtualNewlines {
-                            firstRow = editor_buffer_get_cursor_row_virtual(buf!, cursorIdx, preferences.virtualNewlineLength)
-                            
-                            let rowLength = editor_buffer_get_line_length_virtual(buf!, firstRow, preferences.virtualNewlineLength)
-                            if Int(rowLength) + preferences.tabs.count >= preferences.virtualNewlineLength {
-                                continue
-                            }
-                        } else {
-                            firstRow = editor_buffer_get_cursor_row(buf!, cursorIdx)
-                        }
-                        lastRow = firstRow
-                    }
-                    
-                    for row in firstRow...lastRow {
-                        editor_buffer_insert_at_point(buf!, preferences.tabs, row, 0, preferences.virtualNewlines ? 1 : 0, preferences.virtualNewlineLength)
-                    }
-                }
-                
-                editor_buffer_set_saves_to_undo(buf!, 1)
+                vimStack.append(.indent)
             } else {
-                vimStack.append(contentsOf: lastVimStack)
+                editor_buffer_copy_last_undo(buf!)
+                
+                let previouslyRecording = recording
+                vimStack = dotVimStack
+                playback = true
+                interpretVim()
+                playback = false
+                recording = previouslyRecording
             }
         } else if !event.modifierFlags.contains(.shift) && event.keyCode == 29 {
             // 0
@@ -814,78 +700,18 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
             case .repeatCount(let lastValue)?:
                 vimStack[vimStack.count - 1] = .repeatCount(value: lastValue * 10 + 4)
             default:
-                vimStack.append(.repeatCount(value: 4))
+                vimStack.append(.repeatCount(value: 5))
             }
         } else if event.modifierFlags.contains(.shift) && event.keyCode == 23 {
             // 5
-            for i in (0 ..< editor_buffer_get_cursor_count(buf!)).reversed() {
-                var startPos = editor_buffer_get_cursor_pos(buf!, i)
-                var matchCount = 0
-                
-                let charAtCursor = charAt(startPos)
-                let left, right: String
-                let backward: Bool
-                switch charAtCursor {
-                case "(", ")":
-                    left = "("
-                    right = ")"
-                    backward = charAtCursor == ")"
-                case "[", "]":
-                    left = "["
-                    right = "]"
-                    backward = charAtCursor == "]"
-                case "{", "}":
-                    left = "{"
-                    right = "}"
-                    backward = charAtCursor == "}"
-                case "<", ">":
-                    left = "<"
-                    right = ">"
-                    backward = charAtCursor == ">"
-                default:
-                    continue
-                }
-                
-                let (visual, _) = mode.isVisual()
-                
-                if backward && visual {
-                    editor_buffer_set_cursor_is_selection_for_cursor_index(buf!, i, 0)
-                    editor_buffer_set_cursor_pos_relative_for_cursor_index(buf!, i, 1)
-                    editor_buffer_set_cursor_is_selection_for_cursor_index(buf!, i, 1)
-                }
-                
-                let charCount = editor_buffer_get_char_count(buf!)
-                let targetChar = backward ? left : right
-                let nonTargetChar = backward ? right : left
-                while startPos >= 0 && startPos < charCount {
-                    let char = charAt(startPos)
-                    if char == targetChar {
-                        matchCount -= 1
-                    } else if char == nonTargetChar {
-                        matchCount += 1
-                    }
-                    if matchCount == 0 {
-                        if !visual {
-                            editor_buffer_set_cursor_is_selection_for_cursor_index(buf!, i, 0)
-                        }
-                        editor_buffer_set_cursor_pos_for_cursor_index(buf!, i, startPos)
-                        break
-                    }
-                    
-                    startPos += backward ? -1 : 1
-                }
-                
-                if !backward && visual {
-                    editor_buffer_set_cursor_pos_relative_for_cursor_index(buf!, i, 1)
-                }
-            }
+            vimStack.append(.matching)
         } else if !event.modifierFlags.contains(.shift) && event.keyCode == 22 {
             // 6
             switch vimStack.last {
             case .repeatCount(let lastValue)?:
                 vimStack[vimStack.count - 1] = .repeatCount(value: lastValue * 10 + 5)
             default:
-                vimStack.append(.repeatCount(value: 5))
+                vimStack.append(.repeatCount(value: 6))
             }
         } else if !event.modifierFlags.contains(.shift) && event.keyCode == 26 {
             // 7
@@ -913,74 +739,17 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
             }
         } else if event.keyCode == 43 && event.modifierFlags.contains(.shift) {
             // '<'
-            if event.modifierFlags.contains(.shift) {
-                editor_buffer_copy_last_undo(buf!)
-                editor_buffer_set_saves_to_undo(buf!, 0)
-                
-                for cursorIdx in 0..<editor_buffer_get_cursor_count(buf!) {
-                    let firstRow, lastRow: Int64
-                    
-                    if editor_buffer_cursor_is_selection(buf!, cursorIdx) == 1 {
-                        let nonSelectionRow, selectionRow: Int64
-                        
-                        if preferences.virtualNewlines {
-                            nonSelectionRow = editor_buffer_get_cursor_row_virtual(buf!, cursorIdx, preferences.virtualNewlineLength)
-                            selectionRow = editor_buffer_get_cursor_selection_start_row_virtual(buf!, cursorIdx, preferences.virtualNewlineLength)
-                        } else {
-                            nonSelectionRow = editor_buffer_get_cursor_row(buf!, cursorIdx)
-                            selectionRow = editor_buffer_get_cursor_selection_start_row(buf!, cursorIdx)
-                        }
-                        
-                        firstRow = min(nonSelectionRow, selectionRow)
-                        lastRow = max(nonSelectionRow, selectionRow)
-                    } else {
-                        if preferences.virtualNewlines {
-                            firstRow = editor_buffer_get_cursor_row_virtual(buf!, cursorIdx, preferences.virtualNewlineLength)
-                            
-                            let rowLength = editor_buffer_get_line_length_virtual(buf!, firstRow, preferences.virtualNewlineLength)
-                            if Int(rowLength) + preferences.tabs.count >= preferences.virtualNewlineLength {
-                                continue
-                            }
-                        } else {
-                            firstRow = editor_buffer_get_cursor_row(buf!, cursorIdx)
-                        }
-                        lastRow = firstRow
-                    }
-                    
-                    for row in firstRow...lastRow {
-                        let stringBuf: OpaquePointer!
-                        if preferences.virtualNewlines {
-                            stringBuf = editor_buffer_get_text_between_points_virtual(buf!, row, 0, row, Int64(preferences.tabs.count), preferences.virtualNewlineLength)
-                        } else {
-                            stringBuf = editor_buffer_get_text_between_points(buf!, row, 0, row, Int64(preferences.tabs.count))
-                        }
-                        defer {
-                            editor_buffer_free_buf(stringBuf)
-                        }
-                        guard let bufBytes = editor_buffer_get_buf_bytes(stringBuf) else {
-                            return
-                        }
-                        let swiftString = String(cString: bufBytes)
-                        
-                        if swiftString.starts(with: preferences.tabs) {
-                            editor_buffer_delete_at_point(buf!, Int64(preferences.tabs.count), row, Int64(preferences.tabs.count), preferences.virtualNewlines ? 1 : 0, preferences.virtualNewlineLength)
-                        }
-                    }
-                }
-                
-                editor_buffer_set_saves_to_undo(buf!, 1)
-            }
+            vimStack.append(.unindent)
         }
         
-        interpretVim()
-        sort_and_merge_cursors(buf!)
         drawLastLine()
     }
     
-    func interpretVimAtIndex(_ index: Int) -> Bool {
+    func interpretVimAtIndex(_ index: Int, processed: inout Int) -> Bool {
         if vimStack.count <= index { return false }
         
-        switch vimStack[index] {
+        let vimAtIndex = vimStack[index]
+        switch vimAtIndex {
         case .left:
             editor_buffer_set_cursor_pos_relative(buf!, -1)
         case .right:
@@ -1068,6 +837,14 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
                 }
             }
         case .delete:
+            let cursorCount = editor_buffer_get_cursor_count(buf!)
+            var isSelection = false
+            for i in 0 ..< cursorCount {
+                if editor_buffer_cursor_is_selection(buf!, i) == 1 {
+                    isSelection = true
+                }
+            }
+            
             let (isVisual, isLine) = mode.isVisual()
             if isVisual {
                 if isLine {
@@ -1077,15 +854,17 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
                 copySelection()
                 editor_buffer_delete(buf!)
                 editor_buffer_set_cursor_is_selection(buf!, 0)
-                mode = .normal
+                vimStack.append(.changeMode(mode: .normal))
             } else if index > 0 && vimStack[index - 1] == .delete {
                 editor_buffer_copy_last_undo(buf!)
                 editor_buffer_set_cursor_is_selection(buf!, 1)
                 extendSelectionToLines()
+            } else if mode.isInsert() && isSelection {
+                editor_buffer_delete(buf!)
             } else {
                 editor_buffer_set_cursor_is_selection(buf!, 1)
 
-                if !interpretVimAtIndex(index + 1) { return false }
+                if !interpretVimAtIndex(index + 1, processed: &processed) { return false }
                 
                 switch vimStack[index + 1] {
                 case .down:
@@ -1117,10 +896,10 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
             } else if index > 0 && vimStack[index - 1] == .yank {
                 editor_buffer_set_cursor_is_selection(buf!, 1)
                 extendSelectionToLines()
-            } else {
+            } else if !isVisual && !mode.isInsert() {
                 editor_buffer_set_cursor_is_selection(buf!, 1)
                 
-                if !interpretVimAtIndex(index + 1) { return false }
+                if !interpretVimAtIndex(index + 1, processed: &processed) { return false }
                 
                 switch vimStack[index + 1] {
                 case .down:
@@ -1140,7 +919,10 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
             }
             
             copySelection()
-            editor_buffer_set_cursor_is_selection(buf!, 0)
+            
+            if !mode.isInsert() {
+                editor_buffer_set_cursor_is_selection(buf!, 0)
+            }
         case .change:
             let (isVisual, isLine) = mode.isVisual()
             if isVisual {
@@ -1153,7 +935,7 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
             } else {
                 editor_buffer_set_cursor_is_selection(buf!, 1)
                 
-                if !interpretVimAtIndex(index + 1) { return false }
+                if !interpretVimAtIndex(index + 1, processed: &processed) { return false }
                 
                 switch vimStack[index + 1] {
                 case .down:
@@ -1177,7 +959,7 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
                 editor_buffer_set_cursor_is_selection(buf!, 0)
             }
             
-            mode = .insert
+            vimStack.append(.changeMode(mode: .insert(append: false)))
         case .untilForward:
             if vimStack.count <= index + 1 { return false }
             switch vimStack[index + 1] {
@@ -1189,6 +971,7 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
                         editor_buffer_set_cursor_pos_for_cursor_index(buf!, i, newPos)
                     }
                 }
+                processed += 1
             default:
                 return false
             }
@@ -1202,6 +985,7 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
                         editor_buffer_set_cursor_pos_for_cursor_index(buf!, i, newPos)
                     }
                 }
+                processed += 1
             default:
                 return false
             }
@@ -1215,6 +999,7 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
                         editor_buffer_set_cursor_pos_for_cursor_index(buf!, i, newPos)
                     }
                 }
+                processed += 1
             default:
                 return false
             }
@@ -1228,6 +1013,7 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
                         editor_buffer_set_cursor_pos_for_cursor_index(buf!, i, newPos)
                     }
                 }
+                processed += 1
             default:
                 return false
             }
@@ -1282,7 +1068,10 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
                 highlightBetweenMatching(left: "{", right: "}")
             default:
                 Swift.print("unrecognized delete inner for vimStack: \(vimStack)")
+                vimStack = []
+                return false
             }
+            processed += 1
         case .around:
             if vimStack.count <= index + 1 { return false }
             switch vimStack[index + 1] {
@@ -1334,25 +1123,224 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
             default:
                 Swift.print("unrecognized delete around for vimStack: \(vimStack)")
             }
+            processed += 1
+        case .matching:
+            for i in (0 ..< editor_buffer_get_cursor_count(buf!)).reversed() {
+                var startPos = editor_buffer_get_cursor_pos(buf!, i)
+                var matchCount = 0
+                
+                let charAtCursor = charAt(startPos)
+                let left, right: String
+                let backward: Bool
+                switch charAtCursor {
+                case "(", ")":
+                    left = "("
+                    right = ")"
+                    backward = charAtCursor == ")"
+                case "[", "]":
+                    left = "["
+                    right = "]"
+                    backward = charAtCursor == "]"
+                case "{", "}":
+                    left = "{"
+                    right = "}"
+                    backward = charAtCursor == "}"
+                case "<", ">":
+                    left = "<"
+                    right = ">"
+                    backward = charAtCursor == ">"
+                default:
+                    continue
+                }
+                
+                let (visual, _) = mode.isVisual()
+                
+                if backward && visual {
+                    editor_buffer_set_cursor_is_selection_for_cursor_index(buf!, i, 0)
+                    editor_buffer_set_cursor_pos_relative_for_cursor_index(buf!, i, 1)
+                    editor_buffer_set_cursor_is_selection_for_cursor_index(buf!, i, 1)
+                }
+                
+                let charCount = editor_buffer_get_char_count(buf!)
+                let targetChar = backward ? left : right
+                let nonTargetChar = backward ? right : left
+                while startPos >= 0 && startPos < charCount {
+                    let char = charAt(startPos)
+                    if char == targetChar {
+                        matchCount -= 1
+                    } else if char == nonTargetChar {
+                        matchCount += 1
+                    }
+                    if matchCount == 0 {
+                        editor_buffer_set_cursor_pos_for_cursor_index(buf!, i, startPos)
+                        break
+                    }
+                    
+                    startPos += backward ? -1 : 1
+                }
+                
+                if !backward && visual {
+                    editor_buffer_set_cursor_pos_relative_for_cursor_index(buf!, i, 1)
+                }
+            }
         case .replace:
             if vimStack.count <= index + 1 { return false }
             
-            let (isVisual, _) = mode.isVisual()
-            if !isVisual {
+            if case let (isVisual, _) = mode.isVisual(), !isVisual {
                 editor_buffer_set_cursor_is_selection(buf!, 1)
                 editor_buffer_set_cursor_pos_relative(buf!, 1)
             }
             
             copySelection()
             editor_buffer_delete(buf!)
-            if !interpretVimAtIndex(index + 1) { return false }
+            if !interpretVimAtIndex(index + 1, processed: &processed) { return false }
         case .repeatCount(let value):
+            var repeatProcessed: Int = 0
             for _ in 0 ..< value {
-                if !interpretVimAtIndex(index + 1) { return false }
+                repeatProcessed = 0
+                if !interpretVimAtIndex(index + 1, processed: &repeatProcessed) { return false }
             }
+            processed += repeatProcessed
         case .rawChars(let chars):
             editor_buffer_insert(buf!, chars)
+        case .changeMode(let newMode):
+            let (isVisual, _) = newMode.isVisual()
+            editor_buffer_set_cursor_is_selection(buf!, isVisual ? 1 : 0)
+            mode = newMode
+            
+            if mode == .insert(append: true) {
+                editor_buffer_set_cursor_pos_relative(buf!, 1)
+            }
+            
+            if !playback {
+                if mode.isInsert() {
+                    recording = true
+                } else if case let (isVisual, _) = mode.isVisual(), isVisual {
+                    recording = true
+                } else {
+                    dotVimStack.append(vimAtIndex)
+                    recording = false
+                }
+            }
+        case .paste:
+            editor_buffer_set_saves_to_undo(buf!, 1)
+            
+            var clipboardItems: [String] = []
+            for element in pasteboard.pasteboardItems! {
+                if let str = element.string(forType: NSPasteboard.PasteboardType(rawValue: "public.utf8-plain-text")) {
+                    clipboardItems.append(str)
+                }
+            }
+            if clipboardItems.count > 0 {
+                editor_buffer_insert(buf!, clipboardItems[0])
+            }
+            
+            editor_buffer_set_cursor_is_selection(buf!, 0)
+        case .unindent:
+            editor_buffer_copy_last_undo(buf!)
+            editor_buffer_set_saves_to_undo(buf!, 0)
+            
+            for cursorIdx in 0..<editor_buffer_get_cursor_count(buf!) {
+                let firstRow, lastRow: Int64
+                
+                if editor_buffer_cursor_is_selection(buf!, cursorIdx) == 1 {
+                    let nonSelectionRow, selectionRow: Int64
+                    
+                    if preferences.virtualNewlines {
+                        nonSelectionRow = editor_buffer_get_cursor_row_virtual(buf!, cursorIdx, preferences.virtualNewlineLength)
+                        selectionRow = editor_buffer_get_cursor_selection_start_row_virtual(buf!, cursorIdx, preferences.virtualNewlineLength)
+                    } else {
+                        nonSelectionRow = editor_buffer_get_cursor_row(buf!, cursorIdx)
+                        selectionRow = editor_buffer_get_cursor_selection_start_row(buf!, cursorIdx)
+                    }
+                    
+                    firstRow = min(nonSelectionRow, selectionRow)
+                    lastRow = max(nonSelectionRow, selectionRow)
+                } else {
+                    if preferences.virtualNewlines {
+                        firstRow = editor_buffer_get_cursor_row_virtual(buf!, cursorIdx, preferences.virtualNewlineLength)
+                        
+                        let rowLength = editor_buffer_get_line_length_virtual(buf!, firstRow, preferences.virtualNewlineLength)
+                        if Int(rowLength) + preferences.tabs.count >= preferences.virtualNewlineLength {
+                            continue
+                        }
+                    } else {
+                        firstRow = editor_buffer_get_cursor_row(buf!, cursorIdx)
+                    }
+                    lastRow = firstRow
+                }
+                
+                for row in firstRow...lastRow {
+                    let stringBuf: OpaquePointer!
+                    if preferences.virtualNewlines {
+                        stringBuf = editor_buffer_get_text_between_points_virtual(buf!, row, 0, row, Int64(preferences.tabs.count), preferences.virtualNewlineLength)
+                    } else {
+                        stringBuf = editor_buffer_get_text_between_points(buf!, row, 0, row, Int64(preferences.tabs.count))
+                    }
+                    defer {
+                        editor_buffer_free_buf(stringBuf)
+                    }
+                    guard let bufBytes = editor_buffer_get_buf_bytes(stringBuf) else { return false }
+                    let swiftString = String(cString: bufBytes)
+                    
+                    if swiftString.starts(with: preferences.tabs) {
+                        editor_buffer_delete_at_point(buf!, Int64(preferences.tabs.count), row, Int64(preferences.tabs.count), preferences.virtualNewlines ? 1 : 0, preferences.virtualNewlineLength)
+                    }
+                }
+            }
+            editor_buffer_set_saves_to_undo(buf!, 1)
+        case .indent:
+            editor_buffer_copy_last_undo(buf!)
+            editor_buffer_set_saves_to_undo(buf!, 0)
+            
+            for cursorIdx in 0..<editor_buffer_get_cursor_count(buf!) {
+                let firstRow, lastRow: Int64
+                
+                if editor_buffer_cursor_is_selection(buf!, cursorIdx) == 1 {
+                    let nonSelectionRow, selectionRow: Int64
+                    
+                    if preferences.virtualNewlines {
+                        nonSelectionRow = editor_buffer_get_cursor_row_virtual(buf!, cursorIdx, preferences.virtualNewlineLength)
+                        selectionRow = editor_buffer_get_cursor_selection_start_row_virtual(buf!, cursorIdx, preferences.virtualNewlineLength)
+                    } else {
+                        nonSelectionRow = editor_buffer_get_cursor_row(buf!, cursorIdx)
+                        selectionRow = editor_buffer_get_cursor_selection_start_row(buf!, cursorIdx)
+                    }
+                    
+                    firstRow = min(nonSelectionRow, selectionRow)
+                    lastRow = max(nonSelectionRow, selectionRow)
+                    
+                    var canIndent = true
+                    for row in firstRow...lastRow {
+                        let rowLength = editor_buffer_get_line_length_virtual(buf!, row, preferences.virtualNewlineLength)
+                        if Int(rowLength) + preferences.tabs.count >= preferences.virtualNewlineLength {
+                            canIndent = false
+                        }
+                    }
+                    
+                    if !canIndent { continue }
+                } else {
+                    if preferences.virtualNewlines {
+                        firstRow = editor_buffer_get_cursor_row_virtual(buf!, cursorIdx, preferences.virtualNewlineLength)
+                        
+                        let rowLength = editor_buffer_get_line_length_virtual(buf!, firstRow, preferences.virtualNewlineLength)
+                        if Int(rowLength) + preferences.tabs.count >= preferences.virtualNewlineLength {
+                            continue
+                        }
+                    } else {
+                        firstRow = editor_buffer_get_cursor_row(buf!, cursorIdx)
+                    }
+                    lastRow = firstRow
+                }
+                
+                for row in firstRow...lastRow {
+                    editor_buffer_insert_at_point(buf!, preferences.tabs, row, 0, preferences.virtualNewlines ? 1 : 0, preferences.virtualNewlineLength)
+                }
+            }
+            editor_buffer_set_saves_to_undo(buf!, 1)
         }
+        
+        processed += 1
         
         return true
     }
@@ -1444,7 +1432,14 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
     }
     
     func interpretVim() {
-        if vimStack.isEmpty { return }
+        var canStillInterpret = true
+        while canStillInterpret {
+            canStillInterpret = interpretVimRun()
+        }
+    }
+    
+    func interpretVimRun() -> Bool {
+        if vimStack.isEmpty { return false }
         
         // todo(chad): @Hack there should be a 'canInterpretVim' func or something that gives the same result as
         // 'interpretVimAtIndex' but without actually interpreting anything
@@ -1462,32 +1457,40 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
                 editor_buffer_copy_last_undo(buf!)
             }
         case .delete:
-            if vimStack.count > 1 {
+            if vimStack.count > 1 || mode.isVisual().0 {
                 editor_buffer_copy_last_undo(buf!)
             }
         case .repeatCount(_):
             if vimStack.count > 2 {
                 editor_buffer_copy_last_undo(buf!)
             }
+        case .rawChars(_):
+            editor_buffer_copy_last_undo(buf!)
         default:
             ()
         }
+        
         editor_buffer_set_saves_to_undo(buf!, 0)
-        
         defer { editor_buffer_set_saves_to_undo(buf!, 1) }
+
+        var processed: Int = 0
+        if !interpretVimAtIndex(0, processed: &processed) { return false }
         
-        if !interpretVimAtIndex(0) { return }
-        
-        if !vimStack.isEmpty && vimStack[0].isOperation {
-            lastVimStack = vimStack
+        if recording && !playback {
+            dotVimStack.append(contentsOf: vimStack[0 ..< processed])
+        } else if vimStack[0].isOperation && !playback {
+            dotVimStack = Array(vimStack[0 ..< processed])
         }
+        vimStack = Array(vimStack.dropFirst(processed))
+    
+//        print(dotVimStack)
+//        print("")
         
-        vimStack = []
-        
-        let (isVisual, _) = mode.isVisual()
-        if !isVisual {
-            editor_buffer_set_cursor_is_selection(buf!, 0)
-        }
+        return true
+    }
+    
+    func resetDotStack() {
+        dotVimStack = []
     }
     
     func extendSelectionToLines() {
@@ -1572,6 +1575,7 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
             let bufBytes = editor_buffer_get_buf_bytes(stringBuf)
             if bufBytes != nil {
                 swiftString.append(String(cString: bufBytes!))
+                if i < cursorCount - 1 { swiftString.append("\n") }
             }
         }
         
