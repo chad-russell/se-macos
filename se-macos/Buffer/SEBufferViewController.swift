@@ -468,7 +468,6 @@ class SEBufferViewController: SEBufferViewControllerBase {
     
     func search(_ searchStr: String) {
         editor_buffer_make_single_cursor(buf!)
-        
         let cursorPos = editor_buffer_get_cursor_pos(buf!, 0)
         let foundChar = editor_buffer_search_forward(buf!, searchStr, cursorPos)
         if foundChar != -1 {
