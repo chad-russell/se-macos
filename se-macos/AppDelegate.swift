@@ -29,11 +29,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     @IBAction func seFind(_ sender: Any) {
-        if currentFindWindowController == nil {
-            currentFindWindowController = SEFindWindowController.loadFromNib()
+        if let cvc = currentEditor?.commandViewController {
+            currentEditor?.showCommandView(delegate: FindCommandDelegate(delegate: cvc))
         }
-        currentFindWindowController?.currentEditor = currentEditor
-        currentFindWindowController?.showWindow(self)
     }
     
     @IBAction func seChooseFont(sender: NSMenuItem) {

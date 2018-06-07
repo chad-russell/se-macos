@@ -53,7 +53,7 @@ enum vim {
 extension vim {
     var isOperation: Bool {
         switch self {
-        case .delete, .yank, .change, .replace, .paste, .replace, .indent, .unindent:
+        case .delete, .yank, .change, .replace, .paste, .indent, .unindent:
             return true
         default:
             return false
@@ -179,7 +179,6 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
     }
     
     func drawLastLine() {
-        self.editorView.cursorRects = []
         let cursorCount = editor_buffer_get_cursor_count(buf!)
         let row: Int64
         if preferences.virtualNewlines {
@@ -188,17 +187,55 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
             row = editor_buffer_get_cursor_row(buf!, cursorCount - 1)
         }
         self.editorView.drawLine(line: row, scrollToCursor: true)
-        
-        scrollToCursor()
     }
     
     func scrollToCursor() {
-        if !self.editorView.cursorRects.isEmpty {
-            let cursorRect = self.editorView.cursorRects.reduce(self.editorView.cursorRects[0], { a, b in a.union(b) })
-            let outsetRect = cursorRect.insetBy(dx: -5, dy: -5)
-            if !self.editorView.visibleRect.contains(cursorRect) {
-                self.editorView.scrollToVisible(outsetRect)
+        let cursorCount = editor_buffer_get_cursor_count(buf!)
+        var rect: NSRect? = nil
+        for i in 0 ..< cursorCount {
+            let row: Int64
+            let col: Int64
+            if preferences.virtualNewlines {
+                row = editor_buffer_get_cursor_row_virtual(buf!, i, preferences.virtualNewlineLength)
+                col = editor_buffer_get_cursor_col_virtual(buf!, i, preferences.virtualNewlineLength)
+            } else {
+                row = editor_buffer_get_cursor_row(buf!, cursorCount - 1)
+                col = editor_buffer_get_cursor_col(buf!, cursorCount - 1)
             }
+            
+            // get height for row
+            let rowHeight = preferences.charHeight * (CGFloat(row) * 2 + 1)
+            
+            // get width for row
+            let stringBuf: OpaquePointer!
+            if preferences.virtualNewlines {
+                stringBuf = editor_buffer_get_text_between_points_virtual(buf!, row, 0, row + 1, 0, preferences.virtualNewlineLength)
+            } else {
+                stringBuf = editor_buffer_get_text_between_points(buf!, row, 0, row + 1, 0)
+            }
+            defer {
+                editor_buffer_free_buf(stringBuf)
+            }
+            guard let bufBytes = editor_buffer_get_buf_bytes(stringBuf) else {
+                return
+            }
+            let swiftString = String(cString: bufBytes)
+            
+            let stringAttributes = [NSAttributedStringKey.font: preferences.editorFont]
+            let rowWidth = editorView.getOffset(cursorCol: col, swiftString: swiftString, stringAttributes: stringAttributes)
+            
+            // unionize!
+            let nextRect = NSRect(x: rowWidth - 15, y: rowHeight - 15 - rowHeight / 2, width: 30, height: 30)
+            if rect == nil {
+                rect = nextRect
+            }
+            else {
+                rect = rect?.union(nextRect)
+            }
+        }
+        
+        if let rect = rect {
+            self.editorView.scrollToVisible(rect)
         }
     }
     
@@ -219,6 +256,7 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
         interpretVim()
         sort_and_merge_cursors(buf!)
         
+        scrollToCursor()
         reload()
     }
     
@@ -255,6 +293,7 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
             if event.modifierFlags.contains(.command) {
                 let charCount = editor_buffer_get_char_count(buf!)
                 editor_buffer_set_cursor_pos(buf!, charCount)
+                reload()
             } else if event.modifierFlags.contains(.option) {
                 vimStack.append(.paragraph)
             } else {
@@ -266,6 +305,7 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
             
             if event.modifierFlags.contains(.command) {
                 editor_buffer_set_cursor_pos(buf!, 0)
+                reload()
             } else if event.modifierFlags.contains(.option) {
                 vimStack.append(.previousParagraph)
             } else {
@@ -285,8 +325,8 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
                 vimStack.append(.delete)
                 vimStack.append(.previousWord)
             } else {
-                vimStack.append(.delete)
-                vimStack.append(.left)
+                editor_buffer_delete(buf!)
+                editor_buffer_set_cursor_is_selection(buf!, 0)
             }
         } else if event.keyCode == 46 && event.modifierFlags.contains(.command) {
             // m
@@ -429,7 +469,7 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
             // v
             if event.modifierFlags.contains(.command) {
                 editor_buffer_copy_last_undo(buf!)
-                editor_buffer_set_saves_to_undo(buf!, 0)
+//                editor_buffer_set_saves_to_undo(buf!, 0)
                 
                 if event.modifierFlags.contains(.shift) {
                     if preferences.virtualNewlines {
@@ -811,14 +851,12 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
                 editor_buffer_set_cursor_point_to_end_of_line(buf!)
             }
         case .startOfLine:
-            editor_buffer_set_saves_to_undo(buf!, 0)
             if preferences.virtualNewlines {
                 editor_buffer_set_cursor_point_to_start_of_line_virtual(buf!, preferences.virtualNewlineLength)
             } else {
                 editor_buffer_set_cursor_point_to_start_of_line(buf!)
             }
         case .firstNonSpaceCharacterOfLine:
-            editor_buffer_set_saves_to_undo(buf!, 0)
             if preferences.virtualNewlines {
                 editor_buffer_set_cursor_point_to_start_of_line_virtual(buf!, preferences.virtualNewlineLength)
             } else {
@@ -1204,6 +1242,8 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
         case .rawChars(let chars):
             editor_buffer_insert(buf!, chars)
         case .changeMode(let newMode):
+            editor_buffer_copy_last_undo(buf!)
+            
             let (isVisual, _) = newMode.isVisual()
             editor_buffer_set_cursor_is_selection(buf!, isVisual ? 1 : 0)
             mode = newMode
@@ -1223,8 +1263,6 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
                 }
             }
         case .paste:
-            editor_buffer_set_saves_to_undo(buf!, 1)
-            
             var clipboardItems: [String] = []
             for element in pasteboard.pasteboardItems! {
                 if let str = element.string(forType: NSPasteboard.PasteboardType(rawValue: "public.utf8-plain-text")) {
@@ -1238,7 +1276,7 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
             editor_buffer_set_cursor_is_selection(buf!, 0)
         case .unindent:
             editor_buffer_copy_last_undo(buf!)
-            editor_buffer_set_saves_to_undo(buf!, 0)
+//            editor_buffer_set_saves_to_undo(buf!, 0)
             
             for cursorIdx in 0..<editor_buffer_get_cursor_count(buf!) {
                 let firstRow, lastRow: Int64
@@ -1288,10 +1326,11 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
                     }
                 }
             }
+            
             editor_buffer_set_saves_to_undo(buf!, 1)
         case .indent:
             editor_buffer_copy_last_undo(buf!)
-            editor_buffer_set_saves_to_undo(buf!, 0)
+//            editor_buffer_set_saves_to_undo(buf!, 0)
             
             for cursorIdx in 0..<editor_buffer_get_cursor_count(buf!) {
                 let firstRow, lastRow: Int64
@@ -1337,8 +1376,9 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
                     editor_buffer_insert_at_point(buf!, preferences.tabs, row, 0, preferences.virtualNewlines ? 1 : 0, preferences.virtualNewlineLength)
                 }
             }
-            editor_buffer_set_saves_to_undo(buf!, 1)
         }
+        
+        editor_buffer_set_saves_to_undo(buf!, 1)
         
         processed += 1
         
@@ -1744,6 +1784,57 @@ class SEBufferViewControllerBase: NSViewController, SEBufferDelegate {
     func decreaseFontSize() {
         if preferences.editorFont.pointSize > 10 {
             preferences.editorFont = NSFont(name: preferences.editorFont.fontName, size: preferences.editorFont.pointSize - 1)!
+            reload()
+        }
+    }
+    
+    func search(_ searchStr: String) {
+        let cursorCount = editor_buffer_get_cursor_count(buf!)
+        
+        let cursorPos = editor_buffer_get_cursor_pos(buf!, cursorCount - 1)
+        let foundChar = editor_buffer_search_forward(buf!, searchStr, cursorPos)
+        if foundChar != -1 {
+            editor_buffer_set_cursor_is_selection(buf!, 0)
+            editor_buffer_set_cursor_pos(buf!, foundChar)
+            editor_buffer_set_cursor_is_selection(buf!, 1)
+            editor_buffer_set_cursor_pos(buf!, foundChar + Int64(searchStr.count))
+            drawLastLine()
+            reload()
+        }
+    }
+    
+    func searchForwardAndContinue(_ searchStr: String) {
+        let cursorCount = editor_buffer_get_cursor_count(buf!)
+        
+        let cursorPos = editor_buffer_get_cursor_pos(buf!, cursorCount - 1)
+        let foundChar = editor_buffer_search_forward(buf!, searchStr, cursorPos)
+        if foundChar != -1 {
+            editor_buffer_add_cursor_at_point(buf!, 0, 0)
+            editor_buffer_set_cursor_is_selection_for_cursor_index(buf!, cursorCount + 1, 0)
+            
+            editor_buffer_set_cursor_pos_for_cursor_index(buf!, cursorCount + 1, foundChar)
+            editor_buffer_set_cursor_is_selection_for_cursor_index(buf!, cursorCount + 1, 1)
+            
+            editor_buffer_set_cursor_pos_for_cursor_index(buf!, cursorCount + 1, foundChar + Int64(searchStr.count))
+            drawLastLine()
+            reload()
+        }
+    }
+    
+    func searchBackward(_ searchStr: String) {
+        let cursorCount = editor_buffer_get_cursor_count(buf!)
+        
+        let cursorPos = editor_buffer_get_cursor_pos(buf!, cursorCount - 1)
+        let cursorSelectionPos = editor_buffer_get_cursor_selection_start_pos(buf!, cursorCount - 1)
+        let realCursorPos = min(cursorPos, cursorSelectionPos) - 1
+        
+        let foundChar = editor_buffer_search_backward(buf!, searchStr, realCursorPos)
+        if foundChar != -1 {
+            editor_buffer_set_cursor_is_selection(buf!, 0)
+            editor_buffer_set_cursor_pos(buf!, foundChar)
+            editor_buffer_set_cursor_is_selection(buf!, 1)
+            editor_buffer_set_cursor_pos(buf!, foundChar + Int64(searchStr.count))
+            drawLastLine()
             reload()
         }
     }

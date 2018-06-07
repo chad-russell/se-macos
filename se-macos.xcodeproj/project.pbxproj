@@ -33,6 +33,7 @@
 		07D0CC09201549B500AEE86F /* SEOutlineRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07D0CC08201549B500AEE86F /* SEOutlineRowView.swift */; };
 		07D4EE921F5356D2002A9CFE /* SEBufferDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07D4EE911F5356D2002A9CFE /* SEBufferDelegate.swift */; };
 		07D4EE961F53C34C002A9CFE /* SECommandPaneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07D4EE951F53C34C002A9CFE /* SECommandPaneView.swift */; };
+		07E5A2A9207EAA570030EB86 /* FindCommandDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07E5A2A8207EAA570030EB86 /* FindCommandDelegate.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
@@ -78,6 +79,7 @@
 		07D0CC08201549B500AEE86F /* SEOutlineRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SEOutlineRowView.swift; sourceTree = "<group>"; };
 		07D4EE911F5356D2002A9CFE /* SEBufferDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SEBufferDelegate.swift; sourceTree = "<group>"; };
 		07D4EE951F53C34C002A9CFE /* SECommandPaneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SECommandPaneView.swift; sourceTree = "<group>"; };
+		07E5A2A8207EAA570030EB86 /* FindCommandDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindCommandDelegate.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -178,6 +180,7 @@
 				070760421F54547000D6FB9B /* SECommandPaneViewController.swift */,
 				07A9B58D201414070076B326 /* SearchCommandDelegate.swift */,
 				07A9B58F2014220C0076B326 /* JumpToLocationCommandDelegate.swift */,
+				07E5A2A8207EAA570030EB86 /* FindCommandDelegate.swift */,
 				07673071200FF6E50090FF17 /* SEFindTableCellView.swift */,
 				07D4EE951F53C34C002A9CFE /* SECommandPaneView.swift */,
 			);
@@ -258,6 +261,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				07E5A2A9207EAA570030EB86 /* FindCommandDelegate.swift in Sources */,
 				07D4EE921F5356D2002A9CFE /* SEBufferDelegate.swift in Sources */,
 				071810C61F3B8FE9000FF379 /* SESliderView.swift in Sources */,
 				07D4EE961F53C34C002A9CFE /* SECommandPaneView.swift in Sources */,

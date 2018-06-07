@@ -152,9 +152,10 @@ class SEBufferViewController: SEBufferViewControllerBase {
         let curOffset = editorView.enclosingScrollView!.bounds.origin
         var newOffset = curOffset
         newOffset.y = changedBoundsOrigin.y
-        if !NSEqualPoints(curOffset, newOffset) {
+        
+//        if !NSEqualPoints(curOffset, newOffset) {
             gutterView.enclosingScrollView!.scroll(gutterView.enclosingScrollView!.contentView, to: newOffset)
-        }
+//        }
     }
     
     override func handleMouseDown(with theEvent: NSEvent) {
@@ -247,6 +248,11 @@ class SEBufferViewController: SEBufferViewControllerBase {
                 toggleCommandView(delegate: JumpToLocationCommandDelegate(delegate: cvc))
             }
             return
+        } else if event.keyCode == 3 && event.modifierFlags.contains(.command) {
+            // cmd + f
+            if let cvc = self.commandViewController {
+                toggleCommandView(delegate: FindCommandDelegate(delegate: cvc))
+            }
         }
         
         if showingCommandView {
@@ -302,7 +308,7 @@ class SEBufferViewController: SEBufferViewControllerBase {
 
         self.globalUndoSlider.max = Int(editor_buffer_get_global_undo_size(buf!))
         self.globalUndoSlider.value = Int(editor_buffer_get_global_undo_index(buf!))
-
+        
         // calculate height of buffer view and update if necessary
         let lineCount: Int64
         if preferences.virtualNewlines {
@@ -326,18 +332,11 @@ class SEBufferViewController: SEBufferViewControllerBase {
             } else {
                 let charWidth = preferences.charWidth
                 if buf != nil {
-                    let lineCount: Int64
-                    if preferences.virtualNewlines {
-                        lineCount = editor_buffer_get_line_count_virtual(buf!, preferences.virtualNewlineLength)
-                    } else {
-                        lineCount = editor_buffer_get_line_count(buf!)
-                    }
-
                     if lineCount < 11 {
-                        gutterViewWidth.constant = charWidth * 2 + gutterView.margin * 2
+                        gutterViewWidth.constant = charWidth * 3 + gutterView.margin * 2
                     } else {
-                        let charCount = floor(log10(Double(lineCount - 1)))
-                        gutterViewWidth.constant = charWidth * CGFloat(charCount + 1) + gutterView.margin * 2
+                        let charCount = floor(log10(Double(lineCount - 1))) + 1
+                        gutterViewWidth.constant = charWidth * CGFloat(charCount + 1) + gutterView.margin * 5
                     }
                 } else {
                     gutterViewWidth.constant = charWidth * 2 + gutterView.margin * 2
@@ -346,7 +345,6 @@ class SEBufferViewController: SEBufferViewControllerBase {
             }
         }
 
-        self.editorView.cursorRects = []
         sort_and_merge_cursors(buf!)
         
         self.view.layer?.backgroundColor = preferences.editorBackgroundColor.cgColor
@@ -466,38 +464,6 @@ class SEBufferViewController: SEBufferViewControllerBase {
         }
     }
     
-    func search(_ searchStr: String) {
-        editor_buffer_make_single_cursor(buf!)
-        let cursorPos = editor_buffer_get_cursor_pos(buf!, 0)
-        let foundChar = editor_buffer_search_forward(buf!, searchStr, cursorPos)
-        if foundChar != -1 {
-            editor_buffer_set_cursor_is_selection(buf!, 0)
-            editor_buffer_set_cursor_pos(buf!, foundChar)
-            editor_buffer_set_cursor_is_selection(buf!, 1)
-            editor_buffer_set_cursor_pos(buf!, foundChar + Int64(searchStr.count))
-            drawLastLine()
-            reload()
-        }
-    }
-    
-    func searchBackward(_ searchStr: String) {
-        editor_buffer_make_single_cursor(buf!)
-        
-        let cursorPos = editor_buffer_get_cursor_pos(buf!, 0)
-        let cursorSelectionPos = editor_buffer_get_cursor_selection_start_pos(buf!, 0)
-        let realCursorPos = min(cursorPos, cursorSelectionPos) - 1
-        
-        let foundChar = editor_buffer_search_backward(buf!, searchStr, realCursorPos)
-        if foundChar != -1 {
-            editor_buffer_set_cursor_is_selection(buf!, 0)
-            editor_buffer_set_cursor_pos(buf!, foundChar)
-            editor_buffer_set_cursor_is_selection(buf!, 1)
-            editor_buffer_set_cursor_pos(buf!, foundChar + Int64(searchStr.count))
-            drawLastLine()
-            reload()
-        }
-    }
-    
     override func prepare(for segue: NSStoryboardSegue, sender: Any?) {
         if segue.identifier?.rawValue != "commandPanel" { return }
         
@@ -518,6 +484,8 @@ extension SEBufferViewController: SESliderViewDelegate {
             drawLastLine()
             reload()
         }
+        
+        scrollToCursor()
     }
 }
 

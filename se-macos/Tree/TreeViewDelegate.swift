@@ -91,6 +91,7 @@ extension SEBufferViewController: NSOutlineViewDelegate, NSOutlineViewDataSource
         }
         
         assert(false)
+        return ()
     }
     
     func outlineView(_ outlineView: NSOutlineView, isItemExpandable item: Any) -> Bool {
@@ -99,6 +100,7 @@ extension SEBufferViewController: NSOutlineViewDelegate, NSOutlineViewDataSource
         }
     
         assert(false)
+        return false
     }
     
     func outlineView(_ outlineView: NSOutlineView, viewFor tableColumn: NSTableColumn?, item: Any) -> NSView? {

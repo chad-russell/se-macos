@@ -84,8 +84,6 @@ class SEEditorView: NSView {
         } else if cursorLayerParent.animation(forKey: "opacity") == nil {
             cursorLayerParent.add(cursorAnimation, forKey: "opacity")
         }
-        
-        delegate.scrollToCursor()
     }
     
     func drawLine(line: Int64, scrollToCursor: Bool = false) {
@@ -96,8 +94,8 @@ class SEEditorView: NSView {
         let context = NSGraphicsContext.current?.cgContext
         
         let stringBuf: OpaquePointer!
-        if preferences.virtualNewlines {
-            stringBuf = editor_buffer_get_text_between_points_virtual(delegate.buf!, line, 0, line + 1, 0, preferences.virtualNewlineLength)
+        if delegate.preferences.virtualNewlines {
+            stringBuf = editor_buffer_get_text_between_points_virtual(delegate.buf!, line, 0, line + 1, 0, delegate.preferences.virtualNewlineLength)
         } else {
             stringBuf = editor_buffer_get_text_between_points(delegate.buf!, line, 0, line + 1, 0)
         }
@@ -288,23 +286,10 @@ class SEEditorView: NSView {
     }
     
     func getOffset(cursorCol: Int64, swiftString: String, stringAttributes: [NSAttributedStringKey : NSObject]) -> CGFloat {
-        let swiftStringCount = swiftString.count
-        var codepointSum = 0
-        var realCursorCol = 0
-        while codepointSum < cursorCol && realCursorCol < swiftStringCount {
-            let startIndex = swiftString.index(swiftString.startIndex, offsetBy: realCursorCol)
-            let endIndex = swiftString.index(swiftString.startIndex, offsetBy: realCursorCol + 1)
-            let swiftCharAt = swiftString[startIndex ..< endIndex]
-            
-            codepointSum += swiftCharAt.unicodeScalars.count
-            realCursorCol += 1
-        }
-        
-        // subscript the string at the real cursor col and get the bounds
-        let endIndex = swiftString.index(swiftString.startIndex, offsetBy: realCursorCol)
-        let substringLine = CTLineCreateWithAttributedString(NSAttributedString(
-            string: String(swiftString[..<endIndex]) + ".", attributes: stringAttributes))
-        
+        let scalars = swiftString.unicodeScalars
+        let range = scalars[scalars.startIndex ..< String.UnicodeScalarView.Index.init(encodedOffset: Int(cursorCol))]
+        let attributedSubstring = NSAttributedString.init(string: String.init(range) + ".", attributes: stringAttributes)
+        let substringLine = CTLineCreateWithAttributedString(attributedSubstring)
         return CTLineGetBoundsWithOptions(substringLine, CTLineBoundsOptions.useOpticalBounds).width - widthOfPeriod
     }
     
